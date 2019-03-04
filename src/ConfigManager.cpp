@@ -7,57 +7,85 @@ const char mimeHTML[] PROGMEM = "text/html";
 const char mimeJSON[] PROGMEM = "application/json";
 const char mimePlain[] PROGMEM = "text/plain";
 
-Mode ConfigManager::getMode() {
+void ConfigParameterGroup::toJsonSchema(JsonObject *json)
+{
+    json->set("name", name);
+    json->set("label", label);
+
+    JsonArray &params = json->createNestedArray("params");
+    std::list<BaseParameter *>::iterator it;
+    for (it = parameters.begin(); it != parameters.end(); ++it)
+    {
+        JsonObject &obj = params.createNestedObject();
+        (*it)->toJsonSchema(&obj);
+    }
+}
+
+Mode ConfigManager::getMode()
+{
     return this->mode;
 }
 
-void ConfigManager::setAPName(const char *name) {
+void ConfigManager::setAPName(const char *name)
+{
     this->apName = (char *)name;
 }
 
-void ConfigManager::setAPPassword(const char *password) {
+void ConfigManager::setAPPassword(const char *password)
+{
     this->apPassword = (char *)password;
 }
 
-void ConfigManager::setAPFilename(const char *filename) {
+void ConfigManager::setAPFilename(const char *filename)
+{
     this->apFilename = (char *)filename;
 }
 
-void ConfigManager::setAPTimeout(const int timeout) {
+void ConfigManager::setAPTimeout(const int timeout)
+{
     this->apTimeout = timeout;
 }
 
-void ConfigManager::setWifiConnectRetries(const int retries) {
+void ConfigManager::setWifiConnectRetries(const int retries)
+{
     this->wifiConnectRetries = retries;
 }
 
-void ConfigManager::setWifiConnectInterval(const int interval) {
+void ConfigManager::setWifiConnectInterval(const int interval)
+{
     this->wifiConnectInterval = interval;
 }
 
-void ConfigManager::setAPCallback(std::function<void(WebServer*)> callback) {
+void ConfigManager::setAPCallback(std::function<void(WebServer *)> callback)
+{
     this->apCallback = callback;
 }
 
-void ConfigManager::setAPICallback(std::function<void(WebServer*)> callback) {
+void ConfigManager::setAPICallback(std::function<void(WebServer *)> callback)
+{
     this->apiCallback = callback;
 }
 
-void ConfigManager::loop() {
-    if (mode == ap && apTimeout > 0 && ((millis() - apStart) / 1000) > apTimeout) {
+void ConfigManager::loop()
+{
+    if (mode == ap && apTimeout > 0 && ((millis() - apStart) / 1000) > apTimeout)
+    {
         ESP.restart();
     }
 
-    if (dnsServer) {
+    if (dnsServer)
+    {
         dnsServer->processNextRequest();
     }
 
-    if (server) {
+    if (server)
+    {
         server->handleClient();
     }
 }
 
-void ConfigManager::save() {
+void ConfigManager::save()
+{
     this->writeConfig();
 }
 
@@ -65,24 +93,58 @@ JsonObject &ConfigManager::decodeJson(String jsonString)
 {
     DynamicJsonBuffer jsonBuffer;
 
-    if (jsonString.length() == 0) {
+    if (jsonString.length() == 0)
+    {
         return jsonBuffer.createObject();
     }
 
-    JsonObject& obj = jsonBuffer.parseObject(jsonString);
+    JsonObject &obj = jsonBuffer.parseObject(jsonString);
 
-    if (!obj.success()) {
+    if (!obj.success())
+    {
         return jsonBuffer.createObject();
     }
 
     return obj;
 }
 
-void ConfigManager::handleAPGet() {
+void ConfigManager::handleGetSettings()
+{
+    // build json with settings values
+}
+
+/**
+ * Return JSON with data schema
+ */
+void ConfigManager::handleGetSettingsSchema()
+{
+    DynamicJsonBuffer jsonBuffer;
+    JsonArray &res = jsonBuffer.createArray();
+
+    std::list<ConfigParameterGroup *>::iterator it;
+    for (it = groups.begin(); it != groups.end(); ++it)
+    {
+        JsonObject &obj = res.createNestedObject();
+        (*it)->toJsonSchema(&obj);
+    }
+
+    String body;
+    res.printTo(body);
+
+    server->send(200, FPSTR(mimeJSON), body);
+}
+
+void ConfigManager::handleGetScan()
+{
+}
+
+void ConfigManager::handleAPGet()
+{
     SPIFFS.begin();
 
     File f = SPIFFS.open(apFilename, "r");
-    if (!f) {
+    if (!f)
+    {
         Serial.println(F("file open failed"));
         server->send(404, FPSTR(mimeHTML), F("File not found"));
         return;
@@ -93,31 +155,35 @@ void ConfigManager::handleAPGet() {
     f.close();
 }
 
-void ConfigManager::handleAPPost() {
+void ConfigManager::handleAPPost()
+{
     bool isJson = server->header("Content-Type") == FPSTR(mimeJSON);
     String ssid;
     String password;
     char ssidChar[32];
     char passwordChar[64];
 
-    if (isJson) {
-        JsonObject& obj = this->decodeJson(server->arg("plain"));
+    if (isJson)
+    {
+        JsonObject &obj = this->decodeJson(server->arg("plain"));
 
         ssid = obj.get<String>("ssid");
         password = obj.get<String>("password");
-    } else {
+    }
+    else
+    {
         ssid = server->arg("ssid");
         password = server->arg("password");
     }
 
-    if (ssid.length() == 0) {
+    if (ssid.length() == 0)
+    {
         server->send(400, FPSTR(mimePlain), F("Invalid ssid or password."));
         return;
     }
 
     strncpy(ssidChar, ssid.c_str(), sizeof(ssidChar));
     strncpy(passwordChar, password.c_str(), sizeof(passwordChar));
-
 
     EEPROM.put(0, magicBytes);
     EEPROM.put(WIFI_OFFSET, ssidChar);
@@ -129,48 +195,52 @@ void ConfigManager::handleAPPost() {
     ESP.restart();
 }
 
-void ConfigManager::handleRESTGet() {
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject& obj = jsonBuffer.createObject();
+void ConfigManager::handleRESTGet()
+{
+    // DynamicJsonBuffer jsonBuffer;
+    // JsonObject& obj = jsonBuffer.createObject();
 
-    std::list<BaseParameter*>::iterator it;
-    for (it = parameters.begin(); it != parameters.end(); ++it) {
-        if ((*it)->getMode() == set) {
-            continue;
-        }
+    // std::list<BaseParameter*>::iterator it;
+    // for (it = parameters.begin(); it != parameters.end(); ++it) {
+    //     if ((*it)->getMode() == set) {
+    //         continue;
+    //     }
 
-        (*it)->toJson(&obj);
-    }
+    //     (*it)->toJson(&obj);
+    // }
 
-    String body;
-    obj.printTo(body);
+    // String body;
+    // obj.printTo(body);
 
-    server->send(200, FPSTR(mimeJSON), body);
+    // server->send(200, FPSTR(mimeJSON), body);
 }
 
-void ConfigManager::handleRESTPut() {
-    JsonObject& obj = this->decodeJson(server->arg("plain"));
-    if (!obj.success()) {
-        server->send(400, FPSTR(mimeJSON), "");
-        return;
-    }
+void ConfigManager::handleRESTPut()
+{
+    // JsonObject& obj = this->decodeJson(server->arg("plain"));
+    // if (!obj.success()) {
+    //     server->send(400, FPSTR(mimeJSON), "");
+    //     return;
+    // }
 
-    std::list<BaseParameter*>::iterator it;
-    for (it = parameters.begin(); it != parameters.end(); ++it) {
-        if ((*it)->getMode() == get) {
-            continue;
-        }
+    // std::list<BaseParameter*>::iterator it;
+    // for (it = parameters.begin(); it != parameters.end(); ++it) {
+    //     if ((*it)->getMode() == get) {
+    //         continue;
+    //     }
 
-        (*it)->fromJson(&obj);
-    }
+    //     (*it)->fromJson(&obj);
+    // }
 
-    writeConfig();
+    // writeConfig();
 
-    server->send(204, FPSTR(mimeJSON), "");
+    // server->send(204, FPSTR(mimeJSON), "");
 }
 
-void ConfigManager::handleNotFound() {
-    if (!isIp(server->hostHeader()) ) {
+void ConfigManager::handleNotFound()
+{
+    if (!isIp(server->hostHeader()))
+    {
         server->sendHeader("Location", String("http://") + toStringIP(server->client().localIP()), true);
         server->send(302, FPSTR(mimePlain), ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
         server->client().stop();
@@ -181,12 +251,15 @@ void ConfigManager::handleNotFound() {
     server->client().stop();
 }
 
-bool ConfigManager::wifiConnected() {
+bool ConfigManager::wifiConnected()
+{
     Serial.print(F("Waiting for WiFi to connect"));
 
     int i = 0;
-    while (i < wifiConnectRetries) {
-        if (WiFi.status() == WL_CONNECTED) {
+    while (i < wifiConnectRetries)
+    {
+        if (WiFi.status() == WL_CONNECTED)
+        {
             Serial.println("");
             return true;
         }
@@ -203,55 +276,96 @@ bool ConfigManager::wifiConnected() {
     return false;
 }
 
-void ConfigManager::setup() {
+void ConfigManager::setup()
+{
     char magic[2];
     char ssid[32];
     char password[64];
 
+    //
+    int test = 0;
+    ConfigParameterGroup *wifiGroup = new ConfigParameterGroup("wifi", "WiFi");
+    wifiGroup->addParameter("test", "Test", &test);
+    groups.push_front(wifiGroup);
+
+    //
     Serial.println(F("Reading saved configuration"));
 
     EEPROM.get(0, magic);
     EEPROM.get(WIFI_OFFSET, ssid);
     EEPROM.get(WIFI_OFFSET + 32, password);
+
     readConfig();
 
-    if (memcmp(magic, magicBytes, 2) == 0) {
+    if (memcmp(magic, magicBytes, 2) == 0)
+    {
         WiFi.begin(ssid, password[0] == '\0' ? NULL : password);
-        if (wifiConnected()) {
+
+        if (wifiConnected())
+        {
             Serial.print(F("Connected to "));
             Serial.print(ssid);
             Serial.print(F(" with "));
             Serial.println(WiFi.localIP());
 
             WiFi.mode(WIFI_STA);
+
             startApi();
-            return;
         }
-    } else {
+    }
+    else
+    {
         // We are at a cold start, don't bother timeing out.
         apTimeout = 0;
+
+        startAP();
     }
 
-    startAP();
+    startWebServer();
 }
 
-void ConfigManager::startAP() {
-    const char* headerKeys[] = {"Content-Type"};
-    size_t headerKeysSize = sizeof(headerKeys)/sizeof(char*);
+void ConfigManager::startWebServer()
+{
+    const char *headerKeys[] = {"Content-Type"};
+    size_t headerKeysSize = sizeof(headerKeys) / sizeof(char *);
 
+    server.reset(new WebServer(80));
+
+    server->collectHeaders(headerKeys, headerKeysSize);
+
+    server->on("/", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleAPGet, this));
+
+    server->on("/settings/", HTTPMethod::HTTP_OPTIONS, std::bind(&ConfigManager::handleGetSettingsSchema, this));
+    server->on("/settings/", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleGetSettings, this));
+    server->on("/settings/", HTTPMethod::HTTP_POST, std::bind(&ConfigManager::handleAPPost, this));
+
+    server->on("/scan/", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleGetScan, this));
+
+    server->onNotFound(std::bind(&ConfigManager::handleNotFound, this));
+
+    if (apCallback)
+    {
+        apCallback(server.get());
+    }
+
+    server->begin();
+}
+
+void ConfigManager::startAP()
+{
     mode = ap;
 
     Serial.println(F("Starting Access Point"));
 
     WiFi.mode(WIFI_AP);
     WiFi.softAP(apName, apPassword);
-	
+
     delay(500); // Need to wait to get IP
-	
+
     IPAddress ip(192, 168, 1, 1);
     IPAddress NMask(255, 255, 255, 0);
     WiFi.softAPConfig(ip, ip, NMask);
-	
+
     IPAddress myIP = WiFi.softAPIP();
     Serial.print("AP IP address: ");
     Serial.println(myIP);
@@ -260,74 +374,55 @@ void ConfigManager::startAP() {
     dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
     dnsServer->start(DNS_PORT, "*", ip);
 
-    server.reset(new WebServer(80));
-    server->collectHeaders(headerKeys, headerKeysSize);
-    server->on("/", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleAPGet, this));
-    server->on("/", HTTPMethod::HTTP_POST, std::bind(&ConfigManager::handleAPPost, this));
-    server->onNotFound(std::bind(&ConfigManager::handleNotFound, this));
-
-    if (apCallback) {
-        apCallback(server.get());
-    }
-
-    server->begin();
-
     apStart = millis();
 }
 
-void ConfigManager::startApi() {
-    const char* headerKeys[] = {"Content-Type"};
-    size_t headerKeysSize = sizeof(headerKeys)/sizeof(char*);
-
+void ConfigManager::startApi()
+{
     mode = api;
-
-    server.reset(new WebServer(80));
-    server->collectHeaders(headerKeys, headerKeysSize);
-    server->on("/", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleAPGet, this));
-    server->on("/", HTTPMethod::HTTP_POST, std::bind(&ConfigManager::handleAPPost, this));
-    server->on("/settings", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleRESTGet, this));
-    server->on("/settings", HTTPMethod::HTTP_PUT, std::bind(&ConfigManager::handleRESTPut, this));
-    server->onNotFound(std::bind(&ConfigManager::handleNotFound, this));
-
-    if (apiCallback) {
-        apiCallback(server.get());
-    }
-
-    server->begin();
 }
 
-void ConfigManager::readConfig() {
+void ConfigManager::readConfig()
+{
     byte *ptr = (byte *)config;
 
-    for (int i = 0; i < configSize; i++) {
+    for (unsigned int i = 0; i < configSize; i++)
+    {
         *(ptr++) = EEPROM.read(CONFIG_OFFSET + i);
     }
 }
 
-void ConfigManager::writeConfig() {
+void ConfigManager::writeConfig()
+{
     byte *ptr = (byte *)config;
 
-    for (int i = 0; i < configSize; i++) {
+    for (unsigned int i = 0; i < configSize; i++)
+    {
         EEPROM.write(CONFIG_OFFSET + i, *(ptr++));
     }
     EEPROM.commit();
 }
 
-boolean ConfigManager::isIp(String str) {
-  for (int i = 0; i < str.length(); i++) {
-    int c = str.charAt(i);
-    if (c != '.' && (c < '0' || c > '9')) {
-      return false;
+boolean ConfigManager::isIp(String str)
+{
+    for (unsigned int i = 0; i < str.length(); i++)
+    {
+        int c = str.charAt(i);
+        if (c != '.' && (c < '0' || c > '9'))
+        {
+            return false;
+        }
     }
-  }
-  return true;
+    return true;
 }
 
-String ConfigManager::toStringIP(IPAddress ip) {
-  String res = "";
-  for (int i = 0; i < 3; i++) {
-    res += String((ip >> (8 * i)) & 0xFF) + ".";
-  }
-  res += String(((ip >> 8 * 3)) & 0xFF);
-  return res;
+String ConfigManager::toStringIP(IPAddress ip)
+{
+    String res = "";
+    for (unsigned int i = 0; i < 3; i++)
+    {
+        res += String((ip >> (8 * i)) & 0xFF) + ".";
+    }
+    res += String((ip >> (8 * 3)) & 0xFF);
+    return res;
 }
