@@ -16,7 +16,10 @@
 
 #include <functional>
 #include <list>
+
 #include "ArduinoJson.h"
+
+#include "typename.h"
 
 #define WIFI_OFFSET 2
 #define CONFIG_OFFSET 98
@@ -93,7 +96,7 @@ class ConfigParameter : public BaseParameter
     {
         json->set("name", name);
         json->set("label", label);
-        json->set("type", "");
+        json->set("type", GetTypeName<T>());
     }
 
   private:
@@ -144,7 +147,7 @@ class ConfigStringParameter : public BaseParameter
     {
         json->set("name", name);
         json->set("label", label);
-        json->set("type", "");
+        json->set("type", "string");
     }
 
   private:

@@ -283,12 +283,6 @@ void ConfigManager::setup()
     char password[64];
 
     //
-    int test = 0;
-    ConfigParameterGroup *wifiGroup = new ConfigParameterGroup("wifi", "WiFi");
-    wifiGroup->addParameter("test", "Test", &test);
-    groups.push_front(wifiGroup);
-
-    //
     Serial.println(F("Reading saved configuration"));
 
     EEPROM.get(0, magic);
@@ -335,12 +329,15 @@ void ConfigManager::startWebServer()
 
     server->on("/", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleAPGet, this));
 
+    // wifi parameters
+    server->on("/wifi/scan/", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleGetScan, this));
+
+    // configuration settings
     server->on("/settings/", HTTPMethod::HTTP_OPTIONS, std::bind(&ConfigManager::handleGetSettingsSchema, this));
     server->on("/settings/", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleGetSettings, this));
     server->on("/settings/", HTTPMethod::HTTP_POST, std::bind(&ConfigManager::handleAPPost, this));
 
-    server->on("/scan/", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleGetScan, this));
-
+    // not found handling
     server->onNotFound(std::bind(&ConfigManager::handleNotFound, this));
 
     if (apCallback)
