@@ -202,6 +202,7 @@ class ConfigParameterGroup
 
     void toJson(JsonObject *json);
     void toJsonSchema(JsonObject *json);
+    void fromJson(JsonObject *json);
 
     const char *getName()
     {

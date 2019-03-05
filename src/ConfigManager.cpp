@@ -32,6 +32,22 @@ void ConfigParameterGroup::toJsonSchema(JsonObject *json)
     }
 }
 
+void ConfigParameterGroup::fromJson(JsonObject *json)
+{
+    if (json->containsKey(name) && json->is<JsonObject>(name))
+    {
+        JsonVariant var = json->get<JsonVariant>(name);
+
+        JsonObject &group = var.asObject();
+
+        std::list<BaseParameter *>::iterator it;
+        for (it = parameters.begin(); it != parameters.end(); ++it)
+        {
+            (*it)->fromJson(&group);
+        }
+    }
+}
+
 void ConfigManager::setAPName(const char *name)
 {
     this->apName = (char *)name;
@@ -288,16 +304,11 @@ void ConfigManager::handlePostSettings()
         return;
     }
 
-    // std::list<BaseParameter *>::iterator it;
-    // for (it = parameters.begin(); it != parameters.end(); ++it)
-    // {
-    //     if ((*it)->getMode() == get)
-    //     {
-    //         continue;
-    //     }
-
-    //     (*it)->fromJson(&obj);
-    // }
+    std::list<ConfigParameterGroup *>::iterator it;
+    for (it = groups.begin(); it != groups.end(); ++it)
+    {
+        (*it)->fromJson(&obj);
+    }
 
     writeConfig();
 
