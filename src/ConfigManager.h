@@ -200,7 +200,13 @@ class ConfigParameterGroup
         return *this;
     }
 
+    void toJson(JsonObject *json);
     void toJsonSchema(JsonObject *json);
+
+    const char *getName()
+    {
+        return name;
+    }
 
   private:
     const char *name;
@@ -216,8 +222,6 @@ class ConfigManager
 {
   public:
     ConfigManager() {}
-
-    Mode getMode();
 
     void setAPName(const char *name);
     void setAPPassword(const char *password);
@@ -276,27 +280,33 @@ class ConfigManager
     std::function<void(WebServer *)> apiCallback;
 
   private:
-    JsonObject &decodeJson(String jsonString);
+    void handleGetRoot();
+
+    void handleGetWifi();
+    void handleGetWifiScan();
+    void handlePostConnect();
+    void handlePostDisconnect();
 
     void handleGetSettings();
     void handleGetSettingsSchema();
-    void handleGetScan();
+    void handlePostSettings();
 
-    void handleAPGet();
     void handleAPPost();
     void handleRESTGet();
     void handleRESTPut();
     void handleNotFound();
 
+  private:
+    JsonObject &decodeJson(String jsonString);
+
+    void readConfig();
+    void writeConfig();
     bool wifiConnected();
     void setup();
     void startAP();
     void startApi();
 
     void startWebServer();
-
-    void readConfig();
-    void writeConfig();
 
     boolean isIp(String str);
     String toStringIP(IPAddress ip);

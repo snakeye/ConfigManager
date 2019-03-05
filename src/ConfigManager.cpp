@@ -7,6 +7,17 @@ const char mimeHTML[] PROGMEM = "text/html";
 const char mimeJSON[] PROGMEM = "application/json";
 const char mimePlain[] PROGMEM = "text/plain";
 
+void ConfigParameterGroup::toJson(JsonObject *json)
+{
+    JsonObject &obj = json->createNestedObject(this->name);
+
+    std::list<BaseParameter *>::iterator it;
+    for (it = parameters.begin(); it != parameters.end(); ++it)
+    {
+        (*it)->toJson(&obj);
+    }
+}
+
 void ConfigParameterGroup::toJsonSchema(JsonObject *json)
 {
     json->set("name", name);
@@ -19,11 +30,6 @@ void ConfigParameterGroup::toJsonSchema(JsonObject *json)
         JsonObject &obj = params.createNestedObject();
         (*it)->toJsonSchema(&obj);
     }
-}
-
-Mode ConfigManager::getMode()
-{
-    return this->mode;
 }
 
 void ConfigManager::setAPName(const char *name)
@@ -70,7 +76,7 @@ void ConfigManager::loop()
 {
     if (mode == ap && apTimeout > 0 && ((millis() - apStart) / 1000) > apTimeout)
     {
-        ESP.restart();
+        // ESP.restart();
     }
 
     if (dnsServer)
@@ -108,37 +114,10 @@ JsonObject &ConfigManager::decodeJson(String jsonString)
     return obj;
 }
 
-void ConfigManager::handleGetSettings()
-{
-    // build json with settings values
-}
-
 /**
- * Return JSON with data schema
+ * Return index.html
  */
-void ConfigManager::handleGetSettingsSchema()
-{
-    DynamicJsonBuffer jsonBuffer;
-    JsonArray &res = jsonBuffer.createArray();
-
-    std::list<ConfigParameterGroup *>::iterator it;
-    for (it = groups.begin(); it != groups.end(); ++it)
-    {
-        JsonObject &obj = res.createNestedObject();
-        (*it)->toJsonSchema(&obj);
-    }
-
-    String body;
-    res.printTo(body);
-
-    server->send(200, FPSTR(mimeJSON), body);
-}
-
-void ConfigManager::handleGetScan()
-{
-}
-
-void ConfigManager::handleAPGet()
+void ConfigManager::handleGetRoot()
 {
     SPIFFS.begin();
 
@@ -155,7 +134,65 @@ void ConfigManager::handleAPGet()
     f.close();
 }
 
-void ConfigManager::handleAPPost()
+/**
+ * Return current WiFi mode
+ */
+void ConfigManager::handleGetWifi()
+{
+    DynamicJsonBuffer jsonBuffer;
+    JsonObject &res = jsonBuffer.createObject();
+
+    WiFiMode_t mode = WiFi.getMode();
+
+    res.set("mode", mode);
+    res.set("connected", WiFi.isConnected());
+
+    String body;
+    res.printTo(body);
+
+    server->send(200, FPSTR(mimeJSON), body);
+}
+
+/**
+ * Scan networks
+ */
+void ConfigManager::handleGetWifiScan()
+{
+    DynamicJsonBuffer jsonBuffer;
+    JsonArray &res = jsonBuffer.createArray();
+
+    static long lastScan = 0;
+    const long scanPeriod = 5000;
+    long now = millis();
+
+    if (now > lastScan + scanPeriod)
+    {
+        WiFi.scanDelete();
+        WiFi.scanNetworks(true);
+        lastScan = now;
+    }
+
+    int n = WiFi.scanComplete();
+    if (n >= 0)
+    {
+        for (int i = 0; i < n; i++)
+        {
+            JsonObject &obj = res.createNestedObject();
+
+            obj.set("ssid", WiFi.SSID(i));
+            obj.set("channel", WiFi.channel(i));
+            obj.set("rssi", WiFi.RSSI(i));
+            obj.set("open", WiFi.encryptionType(i) == ENC_TYPE_NONE);
+        }
+    }
+
+    String body;
+    res.printTo(body);
+
+    server->send(200, FPSTR(mimeJSON), body);
+}
+
+void ConfigManager::handlePostConnect()
 {
     bool isJson = server->header("Content-Type") == FPSTR(mimeJSON);
     String ssid;
@@ -191,50 +228,80 @@ void ConfigManager::handleAPPost()
     EEPROM.commit();
 
     server->send(204, FPSTR(mimePlain), F("Saved. Will attempt to reboot."));
+}
+
+void ConfigManager::handlePostDisconnect()
+{
+    WiFi.mode(WIFI_STA);
+    WiFi.disconnect();
 
     ESP.restart();
 }
 
-void ConfigManager::handleRESTGet()
+/**
+ * Return JSON with data schema
+ */
+void ConfigManager::handleGetSettingsSchema()
 {
-    // DynamicJsonBuffer jsonBuffer;
-    // JsonObject& obj = jsonBuffer.createObject();
+    DynamicJsonBuffer jsonBuffer;
+    JsonArray &res = jsonBuffer.createArray();
 
-    // std::list<BaseParameter*>::iterator it;
-    // for (it = parameters.begin(); it != parameters.end(); ++it) {
-    //     if ((*it)->getMode() == set) {
-    //         continue;
-    //     }
+    std::list<ConfigParameterGroup *>::iterator it;
+    for (it = groups.begin(); it != groups.end(); ++it)
+    {
+        JsonObject &obj = res.createNestedObject();
+        (*it)->toJsonSchema(&obj);
+    }
 
-    //     (*it)->toJson(&obj);
-    // }
+    String body;
+    res.printTo(body);
 
-    // String body;
-    // obj.printTo(body);
-
-    // server->send(200, FPSTR(mimeJSON), body);
+    server->send(200, FPSTR(mimeJSON), body);
 }
 
-void ConfigManager::handleRESTPut()
+/**
+ * Return JSON with settings values
+ */
+void ConfigManager::handleGetSettings()
 {
-    // JsonObject& obj = this->decodeJson(server->arg("plain"));
-    // if (!obj.success()) {
-    //     server->send(400, FPSTR(mimeJSON), "");
-    //     return;
-    // }
+    DynamicJsonBuffer jsonBuffer;
+    JsonObject &res = jsonBuffer.createObject();
 
-    // std::list<BaseParameter*>::iterator it;
-    // for (it = parameters.begin(); it != parameters.end(); ++it) {
-    //     if ((*it)->getMode() == get) {
+    std::list<ConfigParameterGroup *>::iterator it;
+    for (it = groups.begin(); it != groups.end(); ++it)
+    {
+        (*it)->toJson(&res);
+    }
+
+    String body;
+    res.printTo(body);
+
+    server->send(200, FPSTR(mimeJSON), body);
+}
+
+void ConfigManager::handlePostSettings()
+{
+    JsonObject &obj = this->decodeJson(server->arg("plain"));
+    if (!obj.success())
+    {
+        server->send(400, FPSTR(mimeJSON), "");
+        return;
+    }
+
+    // std::list<BaseParameter *>::iterator it;
+    // for (it = parameters.begin(); it != parameters.end(); ++it)
+    // {
+    //     if ((*it)->getMode() == get)
+    //     {
     //         continue;
     //     }
 
     //     (*it)->fromJson(&obj);
     // }
 
-    // writeConfig();
+    writeConfig();
 
-    // server->send(204, FPSTR(mimeJSON), "");
+    server->send(204, FPSTR(mimeJSON), "");
 }
 
 void ConfigManager::handleNotFound()
@@ -327,15 +394,18 @@ void ConfigManager::startWebServer()
 
     server->collectHeaders(headerKeys, headerKeysSize);
 
-    server->on("/", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleAPGet, this));
+    server->on("/", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleGetRoot, this));
 
     // wifi parameters
-    server->on("/wifi/scan/", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleGetScan, this));
+    server->on("/wifi", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleGetWifi, this));
+    server->on("/wifi/scan", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleGetWifiScan, this));
+    server->on("/wifi/connect", HTTPMethod::HTTP_POST, std::bind(&ConfigManager::handlePostConnect, this));
+    server->on("/wifi/disconnect", HTTPMethod::HTTP_POST, std::bind(&ConfigManager::handlePostDisconnect, this));
 
     // configuration settings
-    server->on("/settings/", HTTPMethod::HTTP_OPTIONS, std::bind(&ConfigManager::handleGetSettingsSchema, this));
-    server->on("/settings/", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleGetSettings, this));
-    server->on("/settings/", HTTPMethod::HTTP_POST, std::bind(&ConfigManager::handleAPPost, this));
+    server->on("/settings", HTTPMethod::HTTP_OPTIONS, std::bind(&ConfigManager::handleGetSettingsSchema, this));
+    server->on("/settings", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleGetSettings, this));
+    server->on("/settings", HTTPMethod::HTTP_POST, std::bind(&ConfigManager::handlePostSettings, this));
 
     // not found handling
     server->onNotFound(std::bind(&ConfigManager::handleNotFound, this));
