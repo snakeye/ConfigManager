@@ -1,0 +1,66 @@
+FORMAT: 1A
+
+# API specification
+
+# Group WiFi Settings
+
+## Get current WiFi Status [GET /wifi]
+
++ Response 200 (application/json)
+
+        {
+        }
+
+## Scan for available WiFi Access Points [GET /wifi/scan]
+
++ Response 200 (application/json)
+
+        {
+        }
+
+## Connect to the Access Point [POST /wifi/connect]
+
++ Request (application/json)
+  + Body
+        {
+        }
+
++ Response 204 (application/json)
+
++ Response 400 (application/json)
+
+## Disconnect from the Access Point [POST /wifi/disconnect]
+
++ Response 204 (application/json)
+
++ Response 400 (application/json)
+
+# Group Application Settings
+
+## Settings [/settings]
+
+### Get Schema [OPTIONS]
+
++ Response 200 (application/json)
+
+        {
+        }
+
+### Get current values [GET]
+
++ Response 200 (application/json)
+
+        {
+        }
+
+### Update [POST]
+
++ Request (application/json)
+  + Body
+
+        {
+        }
+
++ Response 204 (application/json)
+
++ Response 400 (application/json)

@@ -1,0 +1,23 @@
+{
+  "name": "ConfigManager",
+  "version": "1.0.0",
+  "repository": "git@github.com:snakeye/ConfigManager.git",
+  "author": "Andrey Ovcharov <andrew.ovcharov@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "watch": "webpack --config config/webpack.config.watch.js --watch --progress",
+    "watch:api": "aglio -i api/api.apib -s",
+    "start": "webpack-dev-server --config config/webpack.config.watch.js --progress",
+    "build:api": "mkdir -p api/dist; aglio -i api/api.apib --compile -o api/dist/api.apib; aglio -i api/api.apib -o api/dist/api.html",
+    "build:dev": "webpack --config config/webpack.config.dev.js --progress",
+    "build:live": "webpack --config config/webpack.config.prod.js --profile"
+  },
+  "dependencies": {
+    "vue": "^2.6.8"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.3.4",
+    "aglio": "^2.3.0",
+    "webpack": "^4.29.6"
+  }
+}
