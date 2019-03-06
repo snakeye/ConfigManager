@@ -1,0 +1,43 @@
+{
+  "name": "ConfigManager",
+  "version": "1.0.0",
+  "repository": "git@github.com:snakeye/ConfigManager.git",
+  "author": "Andrey Ovcharov <andrew.ovcharov@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "watch": "webpack --config src-js/webpack.dev.js --watch --progress",
+    "watch:api": "aglio -i api/api.apib -s",
+    "start": "webpack-dev-server --config src-js/webpack.dev.js --progress",
+    "build:api": "mkdir -p api/dist; aglio -i api/api.apib --compile -o api/dist/api.apib; aglio -i api/api.apib -o api/dist/api.html",
+    "build:dev": "webpack --config src-js/webpack.dev.js --progress",
+    "build:live": "webpack --config src-js/webpack.live.js --profile"
+  },
+  "dependencies": {
+    "vue": "^2.6.8"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.3.4",
+    "aglio": "^2.3.0",
+    "autoprefixer": "^9.4.10",
+    "babel-loader": "^8.0.5",
+    "css-loader": "^2.1.0",
+    "css-mqpacker": "^7.0.0",
+    "cssnano": "^4.1.10",
+    "drakov": "^1.0.4",
+    "html-loader": "^0.5.5",
+    "html-webpack-inline-source-plugin": "^0.0.10",
+    "html-webpack-plugin": "^3.2.0",
+    "mini-css-extract-plugin": "^0.5.0",
+    "node-sass": "^4.11.0",
+    "postcss": "^7.0.14",
+    "postcss-loader": "^3.0.0",
+    "sass-loader": "^7.1.0",
+    "tailwindcss": "^0.7.4",
+    "vue-loader": "^15.7.0",
+    "vue-template-compiler": "^2.6.8",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.2.3",
+    "webpack-dev-server": "^3.2.1",
+    "webpack-merge": "^4.2.1"
+  }
+}

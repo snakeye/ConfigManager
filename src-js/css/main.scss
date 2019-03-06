@@ -1,0 +1,12 @@
+@charset "utf-8";
+
+@tailwind preflight;
+
+@tailwind components;
+
+body {
+  @apply h-full bg-white text-base leading-normal text-black font-sans;
+}
+
+@tailwind utilities;
+
