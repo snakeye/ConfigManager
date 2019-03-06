@@ -8,6 +8,7 @@
     "watch": "webpack --config src-js/webpack.dev.js --watch --progress",
     "watch:api": "aglio -i api/api.apib -s",
     "start": "webpack-dev-server --config src-js/webpack.dev.js --progress",
+    "start:api": "mkdir -p api/dist; aglio -i api/api.apib --compile -o api/dist/api.apib; drakov -f api/dist/api.apib -p 3000",
     "build:api": "mkdir -p api/dist; aglio -i api/api.apib --compile -o api/dist/api.apib; aglio -i api/api.apib -o api/dist/api.html",
     "build:dev": "webpack --config src-js/webpack.dev.js --progress",
     "build:live": "webpack --config src-js/webpack.live.js --profile"

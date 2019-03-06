@@ -21,7 +21,15 @@ void ConfigParameterGroup::toJson(JsonObject *json)
 void ConfigParameterGroup::toJsonSchema(JsonObject *json)
 {
     json->set("name", name);
-    json->set("label", label);
+    if (this->metadata != NULL)
+    {
+        json->set("label", this->metadata->label());
+
+        if (this->metadata->description() != NULL)
+        {
+            json->set("description", this->metadata->description());
+        }
+    }
 
     JsonArray &params = json->createNestedArray("params");
     std::list<BaseParameter *>::iterator it;

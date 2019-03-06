@@ -41,6 +41,30 @@ enum ParameterMode
     both
 };
 
+class Metadata
+{
+  public:
+    Metadata(const char *label, const char *description = NULL)
+    {
+        this->_label = label;
+        this->_description = description;
+    }
+
+    const char *label()
+    {
+        return this->_label;
+    }
+
+    const char *description()
+    {
+        return this->_description;
+    }
+
+  private:
+    const char *_label;
+    const char *_description;
+};
+
 /**
  * Base Parameter
  */
@@ -60,11 +84,11 @@ template <typename T>
 class ConfigParameter : public BaseParameter
 {
   public:
-    ConfigParameter(const char *name, const char *label, T *ptr, ParameterMode mode = both, std::function<void(const char *)> cb = NULL)
+    ConfigParameter(const char *name, T *ptr, Metadata *metadata = NULL, ParameterMode mode = both, std::function<void(const char *)> cb = NULL)
     {
         this->name = name;
-        this->label = label;
         this->ptr = ptr;
+        this->metadata = metadata;
         this->cb = cb;
         this->mode = mode;
     }
@@ -95,14 +119,17 @@ class ConfigParameter : public BaseParameter
     void toJsonSchema(JsonObject *json)
     {
         json->set("name", name);
-        json->set("label", label);
         json->set("type", GetTypeName<T>());
+        if (metadata != NULL)
+        {
+            json->set("label", metadata->label());
+        }
     }
 
   private:
     const char *name;
-    const char *label;
     T *ptr;
+    Metadata *metadata;
     std::function<void(const char *)> cb;
     ParameterMode mode;
 };
@@ -113,12 +140,12 @@ class ConfigParameter : public BaseParameter
 class ConfigStringParameter : public BaseParameter
 {
   public:
-    ConfigStringParameter(const char *name, const char *label, char *ptr, size_t length, ParameterMode mode = both)
+    ConfigStringParameter(const char *name, char *ptr, size_t length, Metadata *metadata = NULL, ParameterMode mode = both)
     {
         this->name = name;
-        this->label = label;
         this->ptr = ptr;
         this->length = length;
+        this->metadata = metadata;
         this->mode = mode;
     }
 
@@ -146,13 +173,16 @@ class ConfigStringParameter : public BaseParameter
     void toJsonSchema(JsonObject *json)
     {
         json->set("name", name);
-        json->set("label", label);
         json->set("type", "string");
+        if (metadata != NULL)
+        {
+            json->set("label", metadata->label());
+        }
     }
 
   private:
     const char *name;
-    const char *label;
+    Metadata *metadata;
     char *ptr;
     size_t length;
     ParameterMode mode;
@@ -164,38 +194,23 @@ class ConfigStringParameter : public BaseParameter
 class ConfigParameterGroup
 {
   public:
-    ConfigParameterGroup(const char *name, const char *label)
+    ConfigParameterGroup(const char *name, Metadata *metadata = NULL)
     {
         this->name = name;
-        this->label = label;
+        this->metadata = metadata;
     }
 
     template <typename T>
-    ConfigParameterGroup &addParameter(const char *name, const char *label, T *variable)
+    ConfigParameterGroup &addParameter(const char *name, T *variable, Metadata *metadata = NULL, ParameterMode mode = both)
     {
-        parameters.push_back(new ConfigParameter<T>(name, label, variable));
+        parameters.push_back(new ConfigParameter<T>(name, variable, metadata, mode));
 
         return *this;
     }
 
-    template <typename T>
-    ConfigParameterGroup &addParameter(const char *name, const char *label, T *variable, ParameterMode mode)
+    ConfigParameterGroup &addParameter(const char *name, char *variable, size_t size, Metadata *metadata = NULL, ParameterMode mode = both)
     {
-        parameters.push_back(new ConfigParameter<T>(name, label, variable, mode));
-
-        return *this;
-    }
-
-    ConfigParameterGroup &addParameter(const char *name, const char *label, char *variable, size_t size)
-    {
-        parameters.push_back(new ConfigStringParameter(name, label, variable, size));
-
-        return *this;
-    }
-
-    ConfigParameterGroup &addParameter(const char *name, const char *label, char *variable, size_t size, ParameterMode mode)
-    {
-        parameters.push_back(new ConfigStringParameter(name, label, variable, size, mode));
+        parameters.push_back(new ConfigStringParameter(name, variable, size, metadata, mode));
 
         return *this;
     }
@@ -211,7 +226,7 @@ class ConfigParameterGroup
 
   private:
     const char *name;
-    const char *label;
+    Metadata *metadata;
 
     std::list<BaseParameter *> parameters;
 };
@@ -235,9 +250,9 @@ class ConfigManager
     void setAPCallback(std::function<void(WebServer *)> callback);
     void setAPICallback(std::function<void(WebServer *)> callback);
 
-    ConfigParameterGroup &addParameterGroup(const char *name, const char *label)
+    ConfigParameterGroup &addParameterGroup(const char *name, Metadata *metadata = NULL)
     {
-        ConfigParameterGroup *group = new ConfigParameterGroup(name, label);
+        ConfigParameterGroup *group = new ConfigParameterGroup(name, metadata);
         groups.push_back(group);
 
         return *group;

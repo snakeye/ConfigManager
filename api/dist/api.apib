@@ -9,15 +9,22 @@ FORMAT: 1A
 + Response 200 (application/json)
 
         {
-            "mode": 1
+            "mode": true,
+            "connected": true
         }
 
 ## Scan for available WiFi Access Points [GET /wifi/scan]
 
 + Response 200 (application/json)
 
-        {
-        }
+        [
+            {
+                "ssid": "Thinking Thing",
+                "channel": 1,
+                "rssi": -58,
+                "open": false
+            },
+        ]
 
 ## Connect to the Access Point [POST /wifi/connect]
 
@@ -45,14 +52,40 @@ FORMAT: 1A
 
 + Response 200 (application/json)
 
-        {
-        }
+        [
+            {
+                "name": "app",
+                "label": "Application",
+                "params": [
+                    {
+                        "name": "name",
+                        "label": "Name",
+                        "type": "string"
+                    },
+                    {
+                        "name": "enabled",
+                        "label": "Enabled",
+                        "type": "bool"
+                    },
+                    {
+                        "name": "hour",
+                        "label": "Hour",
+                        "type": "int"
+                    }
+                ]
+            }
+        ]
 
 ### Get current values [GET]
 
 + Response 200 (application/json)
 
         {
+            "app": {
+                "name": "name",
+                "enabled": false,
+                "hour": 0
+            }
         }
 
 ### Update [POST]
@@ -61,6 +94,11 @@ FORMAT: 1A
   + Body
 
             {
+                "app": {
+                    "name": "new name",
+                    "enabled": true,
+                    "hour": 1234
+                }
             }
 
 + Response 204 (application/json)
