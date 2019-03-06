@@ -2,8 +2,6 @@ const path = require('path');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-
 const baseWebpackConfig = require('./webpack.base');
 
 module.exports = merge(baseWebpackConfig, {
@@ -17,9 +15,6 @@ module.exports = merge(baseWebpackConfig, {
         historyApiFallback: true,
     },
     plugins: [
-        new HtmlWebpackPlugin({
-            template: './src-js/index.html',
-        }),
         new webpack.HotModuleReplacementPlugin(),
         new webpack.NamedModulesPlugin(),
         new webpack.DefinePlugin({}),

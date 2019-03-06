@@ -23,7 +23,8 @@ module.exports = {
             chunkFilename: '[contenthash].css',
         }),
         new HtmlWebpackPlugin({
-           inlineSource: '.(js|css)$' // embed all javascript and css inline
+            template: './src-js/index.html',
+            inlineSource: '.(js|css)$' // embed all javascript and css inline
         }),
         new HtmlWebpackInlineSourcePlugin()
     ],
