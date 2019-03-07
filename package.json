@@ -11,7 +11,7 @@
     "start:api": "mkdir -p api/dist; aglio -i api/api.apib --compile -o api/dist/api.apib; drakov -f api/dist/api.apib -p 3000",
     "build:api": "mkdir -p api/dist; aglio -i api/api.apib --compile -o api/dist/api.apib; aglio -i api/api.apib -o api/dist/api.html",
     "build:dev": "webpack --config src-js/webpack.dev.js --progress",
-    "build:live": "webpack --config src-js/webpack.live.js --profile"
+    "build:live": "webpack --config src-js/webpack.live.js --progress"
   },
   "dependencies": {
     "vue": "^2.6.8"
@@ -25,6 +25,8 @@
     "css-mqpacker": "^7.0.0",
     "cssnano": "^4.1.10",
     "drakov": "^1.0.4",
+    "glob": "^7.1.3",
+    "glob-all": "^3.1.0",
     "html-loader": "^0.5.5",
     "html-webpack-inline-source-plugin": "^0.0.10",
     "html-webpack-plugin": "^3.2.0",
@@ -32,6 +34,7 @@
     "node-sass": "^4.11.0",
     "postcss": "^7.0.14",
     "postcss-loader": "^3.0.0",
+    "purgecss-webpack-plugin": "^1.4.0",
     "sass-loader": "^7.1.0",
     "tailwindcss": "^0.7.4",
     "vue-loader": "^15.7.0",

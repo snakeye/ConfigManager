@@ -4,3 +4,7 @@
 .gcc-flags.json
 
 /node_modules
+
+/data/*.css
+/data/*.js
+/data/*.map
