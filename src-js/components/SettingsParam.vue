@@ -17,7 +17,7 @@ export default {
             required: true
         },
         value: {
-            type: Number || String || Boolean,
+            type: Number | String | Boolean,
             required: true,
         }
     },

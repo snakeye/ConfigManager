@@ -1,6 +1,9 @@
 <template>
     <div>
-        <h2>App settings</h2>
+        <h2>
+            <v-icon icon="cog-solid" class="w-5 h-5"/>
+            App settings
+        </h2>
 
         <div v-for="group in groups" :key="`settings-group-${group.name}`">
             <v-settings-group :group="group" />

@@ -1,8 +1,9 @@
 <template>
     <div class="">
-        <h2>WiFi settings</h2>
-
-        <p></p>
+        <h2>
+            <v-icon icon="wifi-solid" class="w-5 h-5"/>
+            WiFi settings
+        </h2>
 
         <div class="settings-group">
             <div class="form-group">
@@ -24,7 +25,11 @@
 </template>
 
 <script>
-export default {};
+export default {
+    data: () => ({
+        connected: false
+    })
+};
 </script>
 
 <style lang="scss">
