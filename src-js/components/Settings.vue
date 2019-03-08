@@ -1,14 +1,14 @@
 <template>
     <div>
-        App settings
+        <h2>App settings</h2>
 
         <div v-for="group in groups" :key="`settings-group-${group.name}`">
             <v-settings-group :group="group" />
         </div>
 
-        <div>
-            <button class="">Reset</button>
-            <button class="">Save</button>
+        <div class="text-right">
+            <button class="btn --secondary mr-4">Reset</button>
+            <button class="btn --primary ">Save</button>
         </div>
     </div>
 </template>

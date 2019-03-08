@@ -8,5 +8,25 @@ body {
   @apply h-full bg-white text-base leading-normal text-black font-sans;
 }
 
+.btn {
+  @apply inline-block text-center border px-2 py-1;
+
+  &.--primary {
+    
+  }
+
+  &.--secondary {
+
+  }
+}
+
+.form-group {
+  @apply mb-4;
+}
+
+.form-control {
+  @apply block w-full border px-2 py-1;
+}
+
 @tailwind utilities;
 

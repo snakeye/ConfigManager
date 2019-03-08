@@ -1,6 +1,6 @@
 <template>
-    <div class="">
-        {{ group.label }}
+    <div class="settings-group">
+        <h3>{{ group.label }}</h3>
 
         <p>
             {{ group.description }}
@@ -11,7 +11,7 @@
             :key="`settings-group-${group.name}-${param.name}`"
             class=""
         >
-            <v-settings-param param="param" value="123"/>
+            <v-settings-param :param="param" value="123"/>
         </div>
     </div>
 </template>

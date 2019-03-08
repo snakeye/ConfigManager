@@ -1,6 +1,8 @@
 <template>
     <div class="container m-auto">
-        <v-wifi />
+        <h1>Configuration Manager</h1>
+
+        <v-wifi class="mb-8"/>
 
         <v-settings />
     </div>
