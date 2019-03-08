@@ -9,14 +9,22 @@ body {
 }
 
 .btn {
-  @apply inline-block text-center border px-2 py-1;
+  @apply inline-block text-center px-3 py-2 rounded;
 
   &.--primary {
-    
+    @apply bg-green-darker text-white;
+
+    &:hover {
+      @apply bg-green-dark;
+    }
   }
 
   &.--secondary {
+    @apply border bg-grey-lightest;
 
+    &:hover {
+      @apply bg-grey-lighter;
+    }
   }
 }
 
@@ -25,8 +33,7 @@ body {
 }
 
 .form-control {
-  @apply block w-full border px-2 py-1;
+  @apply block w-full border rounded px-3 py-2;
 }
 
 @tailwind utilities;
-

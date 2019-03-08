@@ -1,7 +1,7 @@
 <template>
     <div>
-        <h2>
-            <v-icon icon="cog-solid" class="w-5 h-5"/>
+        <h2 class="mb-4">
+            <v-icon icon="cog-solid" class="w-5 h-5" />
             App settings
         </h2>
 
@@ -36,7 +36,8 @@ export default {
                     {
                         name: "name",
                         label: "Name",
-                        type: "string"
+                        type: "string",
+                        description: "Some description"
                     },
                     {
                         name: "enabled",

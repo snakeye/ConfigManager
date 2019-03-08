@@ -1,25 +1,65 @@
 <template>
     <div class="">
-        <h2>
-            <v-icon icon="wifi-solid" class="w-5 h-5"/>
+        <h2 class="mb-4">
+            <v-icon icon="wifi-solid" class="w-5 h-5" />
             WiFi settings
         </h2>
 
         <div class="settings-group">
             <div class="form-group">
                 <label>Access point</label>
-                <input type="text" class="form-control" />
+                <input type="text" class="form-control" v-model="ssid" />
             </div>
 
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" class="form-control" />
+                <input
+                    type="password"
+                    class="form-control"
+                    v-model="password"
+                />
             </div>
-        </div>
 
-        <div class="text-right">
-            <button v-if="!connected" class="btn --primary">Connect</button>
-            <button v-if="connected" class="btn --primary">Disconnect</button>
+            <div class="text-right mb-4">
+                <button v-if="!connected" class="btn --primary">Connect</button>
+                <button v-if="connected" class="btn --primary">
+                    Disconnect
+                </button>
+            </div>
+
+            <div class="border-t pt-4">
+                <h3 class="mb-4">Available networks</h3>
+
+                <div class="mb-4">
+                    <button class="btn --secondary --sm">
+                        Scan
+                    </button>
+                </div>
+
+                <div
+                    v-for="(net, index) in scan"
+                    :key="`net-${index}`"
+                    class="flex flex-row -mx-2 p-2 hover:bg-grey-lighter cursor-pointer"
+                    @click="selectNetwork(net)"
+                >
+                    <div class="px-2">
+                        <v-icon
+                            v-if="!net.open"
+                            icon="lock-solid"
+                            class="w-4 h-4"
+                        />
+                        <span v-else class="w-4 inline-flex"></span>
+                    </div>
+
+                    <div class="flex-1 px-2">
+                        {{ net.ssid }}
+                    </div>
+
+                    <div class="px-2">
+                        {{ net.rssi }}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -27,8 +67,45 @@
 <script>
 export default {
     data: () => ({
-        connected: false
-    })
+        ssid: "",
+        password: "",
+        connected: false,
+        scan: []
+    }),
+    beforeMount() {
+        this.scan = [
+            {
+                ssid: "Thinking Thing",
+                channel: 1,
+                rssi: -58,
+                open: false
+            },
+            {
+                ssid: "Second",
+                channel: 2,
+                rssi: -58,
+                open: true
+            },
+            {
+                ssid: "Third basic operation",
+                channel: 3,
+                rssi: -58,
+                open: false
+            }
+        ];
+    },
+    methods: {
+        selectNetwork(net) {
+            this.ssid = net.ssid;
+        },
+        rssi(net) {
+            if (net.rssi > -67) {
+            } else if (net.rssi > -70) {
+            } else if (net.rssi > -80) {
+            } else {
+            }
+        }
+    }
 };
 </script>
 
