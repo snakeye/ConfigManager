@@ -39,9 +39,8 @@ const request = (url, method, headers, params, body) => {
         fetch(url, {
                 ...requestParams,
             })
-            .then(parseJsonData)
             .then(data => {
-                resolve(convertToCamelCase(data));
+                resolve(parseJsonData(data));
             })
             .catch(err => {
                 reject(err);

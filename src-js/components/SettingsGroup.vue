@@ -16,7 +16,7 @@
             <v-settings-param
                 :group-name="group.name"
                 :param="param"
-                value="123"
+                :value="getValue(param.name)"
             />
         </div>
     </div>
@@ -33,6 +33,15 @@ export default {
         group: {
             type: Object,
             required: true
+        },
+        values: {
+            type: Object,
+            required: true
+        }
+    },
+    methods: {
+        getValue(param) {
+            return this.values[param];
         }
     }
 };

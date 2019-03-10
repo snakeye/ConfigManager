@@ -1,11 +1,11 @@
-<template>
+    <template>
     <div v-if="param.type === 'bool'" class="form-group">
-        <input :id="paramId" type="checkbox" />
+        <input :id="paramId" type="checkbox" v-model="inputValue">
         <label :for="paramId">{{ param.label }}</label>
     </div>
     <div v-else class="form-group">
         <label :for="paramId">{{ param.label }}</label>
-        <input :id="paramId" type="text" v-model="value" class="form-control" />
+        <input :id="paramId" type="text" v-model="inputValue" class="form-control">
         <p v-if="param.description" class="text-xs">{{ param.description }}</p>
     </div>
 </template>
@@ -26,6 +26,9 @@ export default {
             required: true
         }
     },
+    data: () => ({
+        inputValue: null
+    }),
     computed: {
         isTextInput() {
             return type === "int" || type === "string";
@@ -33,10 +36,12 @@ export default {
         paramId() {
             return "input-" + this.groupName + "-" + this.param.name;
         }
+    },
+    beforeMount() {
+        this.inputValue = this.value;
     }
 };
 </script>
 
 <style lang="scss">
 </style>
-    

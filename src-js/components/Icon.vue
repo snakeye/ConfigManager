@@ -5,8 +5,6 @@
 <script>
 export default {
     props: {
-        // Format: <variant>/<name>
-        // Example: solid/star
         icon: {
             type: String,
             required: true,
