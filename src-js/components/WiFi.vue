@@ -28,7 +28,7 @@
                 </div>
 
                 <div
-                    v-for="(net, index) in scan"
+                    v-for="(net, index) in networks"
                     :key="`net-${index}`"
                     class="flex flex-row -mx-2 p-2 hover:bg-grey-lighter cursor-pointer"
                     @click="selectNetwork(net)"

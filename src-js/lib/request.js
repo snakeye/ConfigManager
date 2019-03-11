@@ -4,22 +4,6 @@ const defaultHeaders = {
 
 const defaultParams = {};
 
-const parseJsonData = response => {
-    const {
-        status
-    } = response;
-
-    if (status !== 200 && status !== 201 && status !== 204) {
-        throw new Error(`Error during response. Response status is ${status}.`);
-    }
-
-    if (status === 204) {
-        return true;
-    }
-
-    return response.json();
-};
-
 const request = (url, method, headers, params, body) => {
     const requestParams = {
         method,
@@ -39,8 +23,10 @@ const request = (url, method, headers, params, body) => {
         fetch(url, {
                 ...requestParams,
             })
+            .then(response => response.json())
             .then(data => {
-                resolve(parseJsonData(data));
+                console.log(url, data);
+                resolve(data);
             })
             .catch(err => {
                 reject(err);
@@ -65,4 +51,4 @@ export const options = (url, data = {
         params: {},
         body: {}
     }) =>
-    request(url, 'OPTIONS', data.headers, data.params, data.body);
+    request(url, 'OPTIONS', data.headers, data.params, null);

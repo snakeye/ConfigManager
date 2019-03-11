@@ -49,7 +49,6 @@ export default {
         },
         save() {
             this.isLoading = true;
-
             post(URL_SETTINGS)
                 .then(() => {
                     this.isLoading = false;
