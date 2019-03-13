@@ -69,7 +69,7 @@ export default {
                     this.initialValues = cloneDeep(this.values);
                     this.isLoading = false;
                 })
-                .catch((err) => {
+                .catch(err => {
                     console.log(err);
                     this.isLoading = false;
                 });

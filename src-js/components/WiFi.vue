@@ -16,8 +16,8 @@
             </div>
 
             <div class="text-right mb-4">
-                <button v-if="!connected" class="btn --primary">Connect</button>
-                <button v-if="connected" class="btn --primary">Disconnect</button>
+                <button v-if="!connected" class="btn --primary" @click="onConnect" :disabled="!isConnectAvailable">Connect</button>
+                <button v-if="connected" class="btn --primary" @click="onDisconnect">Disconnect</button>
             </div>
 
             <div class="border-t pt-4">
@@ -48,8 +48,12 @@
 </template>
 
 <script>
-import { get } from "../lib/request";
-import { URL_WIFI_SCAN } from "../lib/api";
+import { get, post } from "../lib/request";
+import {
+    URL_WIFI_SCAN,
+    URL_WIFI_CONNECT,
+    URL_WIFI_DISCONNECT
+} from "../lib/api";
 
 export default {
     data: () => ({
@@ -59,6 +63,11 @@ export default {
         isScanning: false,
         networks: []
     }),
+    computed: {
+        isConnectAvailable() {
+            return this.ssid !== '';
+        }
+    },
     beforeMount() {
         this.scan();
     },
@@ -83,6 +92,18 @@ export default {
                 .catch(() => {
                     this.isScanning = false;
                 });
+        },
+        onConnect() {
+            post(URL_WIFI_CONNECT, {
+                body: { ssid: this.ssid, password: this.password }
+            })
+                .then(() => {})
+                .catch(() => {});
+        },
+        onDisconnect() {
+            post(URL_WIFI_DISCONNECT)
+                .then(() => {})
+                .catch(() => {});
         }
     }
 };

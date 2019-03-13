@@ -26,10 +26,10 @@ export default {
             required: true
         }
     },
-    data () {
+    data() {
         return {
             inputValue: this.value
-        }
+        };
     },
     computed: {
         isTextInput() {
@@ -40,11 +40,11 @@ export default {
         }
     },
     watch: {
-        value(newValue){
+        value(newValue) {
             this.inputValue = newValue;
         },
-        inputValue (newValue)  {
-            this.$emit('param-updated', this.param.name, newValue);
+        inputValue(newValue) {
+            this.$emit("param-updated", this.param.name, newValue);
         }
     },
     beforeMount() {

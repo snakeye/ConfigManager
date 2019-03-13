@@ -3,15 +3,13 @@
         <div class="mb-4">
             <h3>{{ group.label }}</h3>
 
-            <p class="text-sm">
-                {{ group.description }}
-            </p>
+            <p class="text-sm">{{ group.description }}</p>
         </div>
 
         <div
             v-for="param in group.params"
             :key="`settings-group-${group.name}-${param.name}`"
-            class=""
+            class
         >
             <v-settings-param
                 :group-name="group.name"
@@ -45,7 +43,7 @@ export default {
             return this.values[param];
         },
         onParamUpdate(param, value) {
-            this.$emit('param-update', this.group.name, param, value);
+            this.$emit("param-update", this.group.name, param, value);
         }
     }
 };

@@ -26,6 +26,14 @@ body {
       @apply bg-grey-lighter;
     }
   }
+
+  &:disabled {
+    @apply bg-grey cursor-not-allowed;
+
+    &:hover {
+      @apply bg-grey;
+    }
+  }
 }
 
 .form-group {
