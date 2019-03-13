@@ -25,7 +25,6 @@ const request = (url, method, headers, params, body) => {
             })
             .then(response => response.json())
             .then(data => {
-                console.log(url, data);
                 resolve(data);
             })
             .catch(err => {

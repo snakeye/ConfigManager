@@ -31,7 +31,7 @@ FORMAT: 1A
                 "open": true
             },
             {
-                "ssid": "Thinking Thing",
+                "ssid": "Third network",
                 "channel": 1,
                 "rssi": -90,
                 "open": false
@@ -66,22 +66,41 @@ FORMAT: 1A
 
         [
             {
-                "name": "app",
-                "label": "Application",
+                "name": "mqtt",
+                "label": "MQTT Settings",
+                "description": "Connect the device to the MQTT Server",
                 "params": [
-                    {
-                        "name": "name",
-                        "label": "Name",
-                        "type": "string"
-                    },
                     {
                         "name": "enabled",
                         "label": "Enabled",
                         "type": "bool"
                     },
                     {
-                        "name": "hour",
-                        "label": "Hour",
+                        "name": "server",
+                        "label": "Server",
+                        "type": "string"
+                    },
+                    {
+                        "name": "port",
+                        "label": "Port",
+                        "type": "int"
+                    }
+                ]
+            },
+            {
+                "name": "co2",
+                "label": "CO2 Levels",
+                "params": [
+                    {
+                        "name": "warning",
+                        "label": "Warning",
+                        "description": "Warning CO2 level in ppm",
+                        "type": "int"
+                    },
+                    {
+                        "name": "danger",
+                        "label": "Danger",
+                        "description": "Dangerous CO2 level in ppm",
                         "type": "int"
                     }
                 ]
@@ -93,10 +112,14 @@ FORMAT: 1A
 + Response 200 (application/json)
 
         {
-            "app": {
-                "name": "name",
+            "mqtt": {
                 "enabled": false,
-                "hour": 0
+                "server": "mqtt.example.com",
+                "port": 1234
+            },
+            "co2": {
+                "warning": 1000,
+                "danger": 1400
             }
         }
 
@@ -106,10 +129,14 @@ FORMAT: 1A
   + Body
 
             {
-                "app": {
-                    "name": "new name",
-                    "enabled": true,
-                    "hour": 1234
+                "mqtt": {
+                    "enabled": false,
+                    "server": "mqtt.example.com",
+                    "port": 1234
+                },
+                "co2": {
+                    "warning": 1000,
+                    "danger": 1400,
                 }
             }
 

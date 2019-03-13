@@ -17,6 +17,7 @@
                 :group-name="group.name"
                 :param="param"
                 :value="getValue(param.name)"
+                @param-updated="onParamUpdate"
             />
         </div>
     </div>
@@ -42,6 +43,9 @@ export default {
     methods: {
         getValue(param) {
             return this.values[param];
+        },
+        onParamUpdate(param, value) {
+            this.$emit('param-update', this.group.name, param, value);
         }
     }
 };

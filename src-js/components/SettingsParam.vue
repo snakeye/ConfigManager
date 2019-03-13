@@ -26,15 +26,25 @@ export default {
             required: true
         }
     },
-    data: () => ({
-        inputValue: null
-    }),
+    data () {
+        return {
+            inputValue: this.value
+        }
+    },
     computed: {
         isTextInput() {
             return type === "int" || type === "string";
         },
         paramId() {
             return "input-" + this.groupName + "-" + this.param.name;
+        }
+    },
+    watch: {
+        value(newValue){
+            this.inputValue = newValue;
+        },
+        inputValue (newValue)  {
+            this.$emit('param-updated', this.param.name, newValue);
         }
     },
     beforeMount() {
