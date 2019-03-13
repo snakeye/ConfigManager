@@ -20,8 +20,6 @@
 </template>
 
 <script>
-import cloneDeep from "lodash/cloneDeep";
-
 import SettingsGroup from "./SettingsGroup.vue";
 
 import { get, options, post } from "../lib/request";
@@ -43,7 +41,7 @@ export default {
             .then(([schema, data]) => {
                 this.schema = schema;
                 this.initialValues = data;
-                this.values = cloneDeep(data);
+                this.values = JSON.parse(JSON.stringify(data));
                 this.isLoading = false;
             })
             .catch(err => {
@@ -59,14 +57,14 @@ export default {
             this.values[group][param] = value;
         },
         onReset() {
-            this.values = cloneDeep(this.initialValues);
+            this.values = JSON.parse(JSON.stringify(this.initialValues));
             this.$forceUpdate();
         },
         onSave() {
             this.isLoading = true;
             post(URL_SETTINGS, { body: this.values })
                 .then(() => {
-                    this.initialValues = cloneDeep(this.values);
+                    this.initialValues = JSON.parse(JSON.stringify(values));
                     this.isLoading = false;
                 })
                 .catch(err => {

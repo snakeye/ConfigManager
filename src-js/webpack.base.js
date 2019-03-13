@@ -5,6 +5,7 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
     entry: {
@@ -26,7 +27,8 @@ module.exports = {
             template: './src-js/index.html',
             inlineSource: '.(js|css)$' // embed all javascript and css inline
         }),
-        new HtmlWebpackInlineSourcePlugin()
+        new HtmlWebpackInlineSourcePlugin(),
+        new BundleAnalyzerPlugin()
     ],
     module: {
         rules: [
