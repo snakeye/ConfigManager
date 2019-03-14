@@ -1,4 +1,5 @@
-const api = (url) => 'http://localhost:3000' + url;
+//const api = (url) => 'http://localhost:3000' + url;
+const api = (url) => url;
 
 export const URL_WIFI = api('/wifi');
 export const URL_WIFI_SCAN = api('/wifi/scan');
