@@ -10,18 +10,21 @@ This library was made to ease the complication of configuring Wifi and other
 settings on an ESP8266 or ESP32. It is roughly split into two parts, Wifi configuration
 and REST variable configuration.
 
-# Requires
+## Requires
 
 * [ArduinoJson 5.x](https://github.com/bblanchon/ArduinoJson)
 
-# Quick Start
+## Quick Start
 
-## Installing
+### Installing
 
-You can install through the Arduino Library Manager. The package name is
-**ConfigManager**.
+#### Arduino
 
-## Usage
+You can install through the Arduino Library Manager. The package name is **ConfigManager**.
+
+#### PlatformIO
+
+### Usage
 
 Include the library in your sketch
 
@@ -35,7 +38,7 @@ Initialize a global instance of the library
 ConfigManager configManager;
 ```
 
-Initialize settings object
+Initialize configuration object
 
 ```cpp
 struct Config
@@ -46,7 +49,7 @@ struct Config
 } config;
 ```
 
-In your setup function define required parameters and start the manager.
+In your `setup` function define required parameters and start the manager.
 
 ```cpp
 configManager.setAPName("Config Demo");
@@ -60,46 +63,37 @@ configManager.addParameterGroup("app", new Metadata("Application", "Example of a
 configManager.begin(config);
 ```
 
-In your loop function, run the manager loop
+In your `loop` function, run the manager loop
 
 ```cpp
 configManager.loop();
 ```
 
+### Upload frontend files
+
 Upload the ```index.html``` file found in the ```data``` directory into the SPIFFS.
 Instructions on how to do this vary based on your IDE. Below are links instructions
 on the most common IDEs:
 
-### ESP8266
+#### ESP8266
 
 * [Arduino IDE](http://arduino-esp8266.readthedocs.io/en/latest/filesystem.html#uploading-files-to-file-system)
-
 * [Platform IO](http://docs.platformio.org/en/stable/platforms/espressif.html#uploading-files-to-file-system-spiffs)
 
-### ESP32
+#### ESP32
 
 * [Arduino IDE](https://github.com/me-no-dev/arduino-esp32fs-plugin)
-
 * [Platform IO](http://docs.platformio.org/en/stable/platforms/espressif32.html#uploading-files-to-file-system-spiffs)
 
-# Documentation
+## Things TODO / Roadmap
 
-Class methods and properties are described in the [usage](/docs/usage.md) document.
+* [ ] Eliminate parallel HTTP requests
+* [ ] Proper WiFi connection handling
+* [ ] HTTP Authentication
 
-# API Endpoints
+## Documentation
 
-API endpoints are described in [API Blueprint](/docs/dist/api.apib) and [rendered HTML](/docs/dist/api.html) files.
+* [Usage documentation](/docs/usage.md)
+* [HTTP Endpoints Blueprint](/docs/dist/api.apib)
+* [Frontend development](/docs/frontend.md)
 
-# Frontend development
-
-Install javascript packages running command
-
-```bash
-yarn
-```
-
-Build develpment (`build:dev`) or production (`build:live`) HTML file:
-
-```bash
-yarn build:live
-```
