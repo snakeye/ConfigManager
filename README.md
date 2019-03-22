@@ -4,7 +4,7 @@ Wifi connection and configuration manager for ESP8266 and ESP32.
 
 Based on [ConfigManager](https://github.com/snakeye/ConfigManager) library. The major difference
 is that the full configuration is provided by the device and configuration form is built
-dynamically by javascript application.
+dynamically by JavaScript application.
 
 This library was made to ease the complication of configuring Wifi and other
 settings on an ESP8266 or ESP32. It is roughly split into two parts, Wifi configuration
@@ -20,9 +20,11 @@ and REST variable configuration.
 
 #### Arduino
 
-You can install through the Arduino Library Manager. The package name is **ConfigManager**.
+You can install through the Arduino Library Manager. The package name is **WiFiConfig**.
 
 #### PlatformIO
+
+Library name is **WiFiConfig**
 
 ### Usage
 
@@ -38,14 +40,14 @@ Initialize a global instance of the library
 ConfigManager configManager;
 ```
 
-Initialize configuration object
+Initialize a global instance of the configuration object
 
 ```cpp
 struct Config
 {
-    char name[20] = {0};
     bool enabled = false;
-    int hour = 0;
+    char server[128] = {0};
+    int port = 0;
 } config;
 ```
 
@@ -53,12 +55,11 @@ In your `setup` function define required parameters and start the manager.
 
 ```cpp
 configManager.setAPName("Config Demo");
-configManager.setAPFilename("/index.html");
 
-configManager.addParameterGroup("app", new Metadata("Application", "Example of application properties"))
-    .addParameter("name", config.name, 20, new Metadata("Name"))
+configManager.addParameterGroup("mqtt", new Metadata("MQTT Configuration", "Configuration of MQTT connection"))
     .addParameter("enabled", &config.enabled, new Metadata("Enabled"))
-    .addParameter("hour", &config.hour, new Metadata("Hour"));
+    .addParameter("server", config.server, 20, new Metadata("Server"))
+    .addParameter("port", &config.port, new Metadata("Port", "Default value 1883"));
 
 configManager.begin(config);
 ```
@@ -84,6 +85,11 @@ on the most common IDEs:
 
 * [Arduino IDE](https://github.com/me-no-dev/arduino-esp32fs-plugin)
 * [Platform IO](http://docs.platformio.org/en/stable/platforms/espressif32.html#uploading-files-to-file-system-spiffs)
+
+### Configure the device
+
+Connect the device from the browser using IP address `http://<ip addres>`. The configuration form will be generated
+automatically by the JavaScript application.
 
 ## Things TODO / Roadmap
 
