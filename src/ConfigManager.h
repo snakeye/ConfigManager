@@ -30,31 +30,52 @@ using WebServer = ESP8266WebServer;
 
 enum Mode
 {
-    ap,
-    api
+    MODE_AP,
+    MODE_API
 };
 
 enum ParameterMode
 {
-    get,
-    set,
-    both
+    PARAMETER_GET = 0x01,
+    PARAMETER_SET = 0x02,
+    PARAMETER_BOTH = 0x03
 };
 
+/**
+ * @brief Parameter or Parameter Group metadata
+ *
+ * Allows to assign additional properties for form generation
+ */
 class Metadata
 {
   public:
+    /**
+     * @brief Metadata constructor
+     *
+     * @param label form label
+     * @param description form description, optional
+     */
     Metadata(const char *label, const char *description = NULL)
     {
         this->_label = label;
         this->_description = description;
     }
 
+    /**
+     * @brief Parameter label
+     *
+     * @return label
+     */
     const char *label()
     {
         return this->_label;
     }
 
+    /**
+     * @brief Parameter description
+     *
+     * @return description | NULL
+     */
     const char *description()
     {
         return this->_description;
@@ -66,25 +87,57 @@ class Metadata
 };
 
 /**
- * Base Parameter
+ * @brief Definition of configuration parameter interface
  */
-class BaseParameter
+class ConfigParameterInterface
 {
   public:
-    virtual ParameterMode getMode() = 0;
+    /**
+     * @brief
+     *
+     * @param json
+     */
     virtual void fromJson(JsonObject *json) = 0;
+
+    /**
+     * @brief
+     *
+     * @param json
+     */
     virtual void toJson(JsonObject *json) = 0;
+
+    /**
+     * @brief
+     *
+     * @param json
+     */
     virtual void toJsonSchema(JsonObject *json) = 0;
+
+    /**
+     * @brief Get the Mode object
+     *
+     * @return ParameterMode
+     */
+    virtual ParameterMode getMode() = 0;
 };
 
 /**
- * Config Parameter
+ * @brief Config Parameter
  */
 template <typename T>
-class ConfigParameter : public BaseParameter
+class ConfigParameter : public ConfigParameterInterface
 {
   public:
-    ConfigParameter(const char *name, T *ptr, Metadata *metadata = NULL, ParameterMode mode = both, std::function<void(const char *)> cb = NULL)
+    /**
+     * @brief ConfigParameter constructor
+     *
+     * @param name parameter name
+     * @param ptr parameter value
+     * @param metadata additional parameter configuration, optional
+     * @param mode parameter mode, optional
+     * @param cb callback, optional
+     */
+    ConfigParameter(const char *name, T *ptr, Metadata *metadata = NULL, ParameterMode mode = PARAMETER_BOTH, std::function<void(const char *)> cb = NULL)
     {
         this->name = name;
         this->ptr = ptr;
@@ -93,11 +146,21 @@ class ConfigParameter : public BaseParameter
         this->mode = mode;
     }
 
+    /**
+     * @brief Get parameter mode
+     *
+     * @return parameter mode
+     */
     ParameterMode getMode()
     {
         return this->mode;
     }
 
+    /**
+     * @brief Parse configuration parameter value from JSON object
+     *
+     * @param json JSON object
+     */
     void fromJson(JsonObject *json)
     {
         if (json->containsKey(name) && json->is<T>(name))
@@ -106,6 +169,11 @@ class ConfigParameter : public BaseParameter
         }
     }
 
+    /**
+     * @brief Fill JSON object with parameter value
+     *
+     * @param json pointer to JSON object
+     */
     void toJson(JsonObject *json)
     {
         json->set(name, *ptr);
@@ -116,6 +184,11 @@ class ConfigParameter : public BaseParameter
         }
     }
 
+    /**
+     * @brief Fill JSON object with parameter configuration schema
+     *
+     * @param json pointer to JSON object
+     */
     void toJsonSchema(JsonObject *json)
     {
         json->set("name", name);
@@ -123,6 +196,11 @@ class ConfigParameter : public BaseParameter
         if (metadata != NULL)
         {
             json->set("label", metadata->label());
+
+            if (metadata.description != NULL)
+            {
+                json->set("description", metadata->description());
+            }
         }
     }
 
@@ -135,11 +213,20 @@ class ConfigParameter : public BaseParameter
 };
 
 /**
- * Config String Parameter
+ * @brief ConfigParameter of String type
  */
-class ConfigStringParameter : public BaseParameter
+class ConfigStringParameter : public ConfigParameterInterface
 {
   public:
+    /**
+     * @brief Constructor of ConfigStringParameter
+     *
+     * @param name parameter name
+     * @param ptr parameter value
+     * @param length parameter string buffer value
+     * @param metadata optional parameter metadata
+     * @param mode parameter mode
+     */
     ConfigStringParameter(const char *name, char *ptr, size_t length, Metadata *metadata = NULL, ParameterMode mode = both)
     {
         this->name = name;
@@ -149,27 +236,47 @@ class ConfigStringParameter : public BaseParameter
         this->mode = mode;
     }
 
+    /**
+     * @brief Get the Mode object
+     *
+     * @return ParameterMode
+     */
     ParameterMode getMode()
     {
         return this->mode;
     }
 
+    /**
+     * @brief Get parameter value from JSON object
+     *
+     * @param json pointer to JSON object
+     */
     void fromJson(JsonObject *json)
     {
         if (json->containsKey(name) && json->is<char *>(name))
         {
             const char *value = json->get<const char *>(name);
 
-            memset(ptr, '\n', length);
+            memset(ptr, '\0', length);
             strncpy(ptr, const_cast<char *>(value), length - 1);
         }
     }
 
+    /**
+     * @brief Fill JSON object with parameter value
+     *
+     * @param json pointer to JSON object
+     */
     void toJson(JsonObject *json)
     {
         json->set(name, ptr);
     }
 
+    /**
+     * @brief Fill JSON object with parameter schema definition
+     *
+     * @param json
+     */
     void toJsonSchema(JsonObject *json)
     {
         json->set("name", name);
@@ -177,6 +284,11 @@ class ConfigStringParameter : public BaseParameter
         if (metadata != NULL)
         {
             json->set("label", metadata->label());
+
+            if (metadata.description != NULL)
+            {
+                json->set("description", metadata->description());
+            }
         }
     }
 
@@ -189,17 +301,33 @@ class ConfigStringParameter : public BaseParameter
 };
 
 /**
- * Parameter group
+ * @brief Group of parameters
  */
 class ConfigParameterGroup
 {
   public:
+    /**
+     * @brief Construct a new Config Parameter Group object
+     *
+     * @param name parameter name
+     * @param metadata parameter metadata, optional
+     */
     ConfigParameterGroup(const char *name, Metadata *metadata = NULL)
     {
         this->name = name;
         this->metadata = metadata;
     }
 
+    /**
+     * @brief Add parameter to the group
+     *
+     * @tparam T parameter type
+     * @param name parameter name
+     * @param variable parameter value
+     * @param metadata parameter metadata
+     * @param mode parameter mode
+     * @return ConfigParameterGroup&
+     */
     template <typename T>
     ConfigParameterGroup &addParameter(const char *name, T *variable, Metadata *metadata = NULL, ParameterMode mode = both)
     {
@@ -208,6 +336,16 @@ class ConfigParameterGroup
         return *this;
     }
 
+    /**
+     * @brief Add string parameter to the group
+     *
+     * @param name parameter name
+     * @param variable parameter value
+     * @param size parameter buffer size
+     * @param metadata parameter metadata
+     * @param mode parameter mode
+     * @return ConfigParameterGroup&
+     */
     ConfigParameterGroup &addParameter(const char *name, char *variable, size_t size, Metadata *metadata = NULL, ParameterMode mode = both)
     {
         parameters.push_back(new ConfigStringParameter(name, variable, size, metadata, mode));
@@ -215,10 +353,32 @@ class ConfigParameterGroup
         return *this;
     }
 
+    /**
+     * @brief Fill JSON object with values of this group
+     *
+     * @param json pointer to JSON object
+     */
     void toJson(JsonObject *json);
+
+    /**
+     * @brief Fill JSON object with schema definition of the group
+     *
+     * @param json pointer to JSON object
+     */
     void toJsonSchema(JsonObject *json);
+
+    /**
+     * @brief Get parameter values from JSON object
+     *
+     * @param json pointer to JSON object
+     */
     void fromJson(JsonObject *json);
 
+    /**
+     * @brief Get the Name of the group
+     *
+     * @return const char*
+     */
     const char *getName()
     {
         return name;
@@ -232,24 +392,102 @@ class ConfigParameterGroup
 };
 
 /**
- * Config Manager
+ * @brief Configuration Manager
  */
 class ConfigManager
 {
   public:
-    ConfigManager() {}
+    /**
+     * @brief Construct a new Config Manager object
+     *
+     */
+    ConfigManager();
 
+  public:
+    /**
+     * @brief Set Access Point name
+     *
+     * @param name
+     */
     void setAPName(const char *name);
+
+    /**
+     * @brief Set Access Point password, empty by default
+     *
+     * Sets the password used for the access point. For WPA2-PSK network it should be at least 8 character long.
+     * If not specified, the access point will be open for anybody to connect to.
+     *
+     * @param password
+     */
     void setAPPassword(const char *password);
+
+    /**
+     * @brief Set filename of HTML configurator
+     *
+     * Sets the path in SPIFFS to the webpage to be served by the access point.
+     *
+     * @param filename
+     */
     void setAPFilename(const char *filename);
+
+    /**
+     * @brief Set timeout
+     *
+     * Sets the access point timeout, in seconds (default 0, no timeout).
+     *
+     * Note: The timeout starts when the access point is started, but is evaluated in the loop function.
+     *
+     * @param timeout
+     */
     void setAPTimeout(const int timeout);
 
+    /**
+     * @brief Set number of WiFi retries
+     *
+     * Sets the number of Wifi connection retries. Defaults to 20.
+     *
+     * @param retries
+     */
     void setWifiConnectRetries(const int retries);
+
+    /**
+     * @brief Set number of WiFi connection retries
+     *
+     * Sets the interval (in milliseconds) between Wifi connection retries. Defaults to 500ms.
+     *
+     * @param interval
+     */
     void setWifiConnectInterval(const int interval);
 
+    /**
+     * @brief
+     *
+     * Sets a callback allowing customized http endpoints to be set when the access point is setup.
+     *
+     * @param callback
+     */
     void setAPCallback(std::function<void(WebServer *)> callback);
+
+    /**
+     * @brief
+     *
+     * Sets a callback allowing customized http endpoints to be set when the api is setup.
+     *
+     * @param callback
+     */
     void setAPICallback(std::function<void(WebServer *)> callback);
 
+    /**
+     * @brief
+     *
+     * @param name
+     * @param metadata
+     * @return ConfigParameterGroup&
+     *
+     * @code
+     *   configManager.addParameterGroup("app", new Metadata("Application", "Example of application properties"))
+     * @endcode
+     */
     ConfigParameterGroup &addParameterGroup(const char *name, Metadata *metadata = NULL)
     {
         ConfigParameterGroup *group = new ConfigParameterGroup(name, metadata);
@@ -258,8 +496,14 @@ class ConfigManager
         return *group;
     }
 
-    void loop();
-
+    /**
+     * @brief
+     *
+     * Starts the configuration manager. The config parameter will be saved into and retrieved from the EEPROM.
+     *
+     * @tparam T
+     * @param config
+     */
     template <typename T>
     void begin(T &config)
     {
@@ -271,6 +515,19 @@ class ConfigManager
         setup();
     }
 
+    /**
+     * @brief Handle incoming API requests
+     *
+     * This function should be called from the main loop()
+     */
+    void loop();
+
+    /**
+     * @brief Save configuation values
+     *
+     * Saves the config passed to the begin function to the EEPROM.
+     *
+     */
     void save();
 
   private:
@@ -296,35 +553,145 @@ class ConfigManager
     std::function<void(WebServer *)> apiCallback;
 
   private:
+    /**
+     * @brief
+     *
+     */
     void handleGetRoot();
 
+    /**
+     * @brief
+     *
+     */
     void handleGetWifi();
+
+    /**
+     * @brief
+     *
+     */
     void handleGetWifiScan();
+
+    /**
+     * @brief
+     *
+     */
     void handlePostConnect();
+
+    /**
+     * @brief
+     *
+     */
     void handlePostDisconnect();
 
+    /**
+     * @brief
+     *
+     */
     void handleGetSettings();
+
+    /**
+     * @brief
+     *
+     */
     void handleGetSettingsSchema();
+
+    /**
+     * @brief
+     *
+     */
     void handlePostSettings();
 
+    /**
+     * @brief
+     *
+     */
     void handleAPPost();
+
+    /**
+     * @brief
+     *
+     */
     void handleRESTGet();
+
+    /**
+     * @brief
+     *
+     */
     void handleRESTPut();
+
+    /**
+     * @brief
+     *
+     */
     void handleNotFound();
 
   private:
+    /**
+     * @brief
+     *
+     * @param jsonString
+     * @return JsonObject&
+     */
     JsonObject &decodeJson(String jsonString);
 
+    /**
+     * @brief
+     *
+     */
     void readConfig();
+
+    /**
+     * @brief
+     *
+     */
     void writeConfig();
+
+    /**
+     * @brief
+     *
+     * @return true
+     * @return false
+     */
     bool wifiConnected();
+
+    /**
+     * @brief
+     *
+     */
     void setup();
+
+    /**
+     * @brief
+     *
+     */
     void startAP();
+
+    /**
+     * @brief
+     *
+     */
     void startApi();
 
+    /**
+     * @brief
+     *
+     */
     void startWebServer();
 
+    /**
+     * @brief
+     *
+     * @param str
+     * @return boolean
+     */
     boolean isIp(String str);
+
+    /**
+     * @brief
+     *
+     * @param ip
+     * @return String
+     */
     String toStringIP(IPAddress ip);
 };
 

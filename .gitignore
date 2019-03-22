@@ -1,5 +1,6 @@
+.vscode
 .pioenvs
-
+.directory
 .clang_complete
 .gcc-flags.json
 
@@ -8,3 +9,5 @@
 /data/*.css
 /data/*.js
 /data/*.map
+
+/docs/dist/doxygen
