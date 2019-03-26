@@ -197,7 +197,7 @@ class ConfigParameter : public ConfigParameterInterface
         {
             json->set("label", metadata->label());
 
-            if (metadata.description != NULL)
+            if (metadata->description() != NULL)
             {
                 json->set("description", metadata->description());
             }
@@ -227,7 +227,7 @@ class ConfigStringParameter : public ConfigParameterInterface
      * @param metadata optional parameter metadata
      * @param mode parameter mode
      */
-    ConfigStringParameter(const char *name, char *ptr, size_t length, Metadata *metadata = NULL, ParameterMode mode = both)
+    ConfigStringParameter(const char *name, char *ptr, size_t length, Metadata *metadata = NULL, ParameterMode mode = PARAMETER_BOTH)
     {
         this->name = name;
         this->ptr = ptr;
@@ -285,7 +285,7 @@ class ConfigStringParameter : public ConfigParameterInterface
         {
             json->set("label", metadata->label());
 
-            if (metadata.description != NULL)
+            if (metadata->description() != NULL)
             {
                 json->set("description", metadata->description());
             }
@@ -329,7 +329,7 @@ class ConfigParameterGroup
      * @return ConfigParameterGroup&
      */
     template <typename T>
-    ConfigParameterGroup &addParameter(const char *name, T *variable, Metadata *metadata = NULL, ParameterMode mode = both)
+    ConfigParameterGroup &addParameter(const char *name, T *variable, Metadata *metadata = NULL, ParameterMode mode = PARAMETER_BOTH)
     {
         parameters.push_back(new ConfigParameter<T>(name, variable, metadata, mode));
 
@@ -346,7 +346,7 @@ class ConfigParameterGroup
      * @param mode parameter mode
      * @return ConfigParameterGroup&
      */
-    ConfigParameterGroup &addParameter(const char *name, char *variable, size_t size, Metadata *metadata = NULL, ParameterMode mode = both)
+    ConfigParameterGroup &addParameter(const char *name, char *variable, size_t size, Metadata *metadata = NULL, ParameterMode mode = PARAMETER_BOTH)
     {
         parameters.push_back(new ConfigStringParameter(name, variable, size, metadata, mode));
 
@@ -388,7 +388,7 @@ class ConfigParameterGroup
     const char *name;
     Metadata *metadata;
 
-    std::list<BaseParameter *> parameters;
+    std::list<ConfigParameterInterface *> parameters;
 };
 
 /**

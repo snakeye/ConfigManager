@@ -54,7 +54,7 @@ void ConfigManager::setAPICallback(std::function<void(WebServer *)> callback)
 
 void ConfigManager::loop()
 {
-    if (mode == ap && apTimeout > 0 && ((millis() - apStart) / 1000) > apTimeout)
+    if (mode == MODE_AP && apTimeout > 0 && ((millis() - apStart) / 1000) > apTimeout)
     {
         // ESP.restart();
     }
@@ -395,7 +395,7 @@ void ConfigManager::startWebServer()
 
 void ConfigManager::startAP()
 {
-    mode = ap;
+    mode = MODE_AP;
 
     Serial.println(F("Starting Access Point"));
 
@@ -421,7 +421,7 @@ void ConfigManager::startAP()
 
 void ConfigManager::startApi()
 {
-    mode = api;
+    mode = MODE_API;
 }
 
 void ConfigManager::readConfig()

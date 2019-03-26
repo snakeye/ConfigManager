@@ -4,7 +4,7 @@ void ConfigParameterGroup::toJson(JsonObject *json)
 {
     JsonObject &obj = json->createNestedObject(this->name);
 
-    std::list<BaseParameter *>::iterator it;
+    std::list<ConfigParameterInterface *>::iterator it;
     for (it = parameters.begin(); it != parameters.end(); ++it)
     {
         (*it)->toJson(&obj);
@@ -25,7 +25,7 @@ void ConfigParameterGroup::toJsonSchema(JsonObject *json)
     }
 
     JsonArray &params = json->createNestedArray("params");
-    std::list<BaseParameter *>::iterator it;
+    std::list<ConfigParameterInterface *>::iterator it;
     for (it = parameters.begin(); it != parameters.end(); ++it)
     {
         JsonObject &obj = params.createNestedObject();
@@ -41,7 +41,7 @@ void ConfigParameterGroup::fromJson(JsonObject *json)
 
         JsonObject &group = var.asObject();
 
-        std::list<BaseParameter *>::iterator it;
+        std::list<ConfigParameterInterface *>::iterator it;
         for (it = parameters.begin(); it != parameters.end(); ++it)
         {
             (*it)->fromJson(&group);
