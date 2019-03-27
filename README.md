@@ -58,7 +58,7 @@ configManager.setAPName("Config Demo");
 
 configManager.addParameterGroup("mqtt", new Metadata("MQTT Configuration", "Configuration of MQTT connection"))
     .addParameter("enabled", &config.enabled, new Metadata("Enabled"))
-    .addParameter("server", config.server, 20, new Metadata("Server"))
+    .addParameter("server", config.server, 128, new Metadata("Server"))
     .addParameter("port", &config.port, new Metadata("Port", "Default value 1883"));
 
 configManager.begin(config);
