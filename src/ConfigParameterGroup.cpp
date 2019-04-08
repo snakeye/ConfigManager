@@ -1,4 +1,4 @@
-#include "ConfigManager.h"
+#include "WiFiConfig.h"
 
 void ConfigParameterGroup::toJson(JsonObject *json)
 {

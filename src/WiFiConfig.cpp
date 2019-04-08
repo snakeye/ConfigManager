@@ -1,4 +1,4 @@
-#include "ConfigManager.h"
+#include "WiFiConfig.h"
 
 const byte DNS_PORT = 53;
 const char magicBytes[2] = {'C', 'M'};

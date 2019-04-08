@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#include <ConfigManager.h>
+#include <WiFiConfig.h>
 
 struct Config
 {
