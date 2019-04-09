@@ -134,7 +134,8 @@ void ConfigManager::handleGetWifi()
 }
 
 /**
- * Scan networks
+ * @brief Scan WiFi networks
+ *
  */
 void ConfigManager::handleGetWifiScan()
 {
@@ -172,6 +173,10 @@ void ConfigManager::handleGetWifiScan()
     server->send(200, FPSTR(mimeJSON), body);
 }
 
+/**
+ * @brief Connect to the Access Point
+ *
+ */
 void ConfigManager::handlePostConnect()
 {
     bool isJson = server->header("Content-Type") == FPSTR(mimeJSON);
@@ -320,28 +325,49 @@ bool ConfigManager::wifiConnected()
 
 void ConfigManager::setup()
 {
-    char magic[2];
-    char ssid[32];
-    char password[64];
+    char magic[2] = {0};
+    char ssid[32] = {0};
+    char password[64] = {0};
 
     //
     Serial.println(F("Reading saved configuration"));
 
     EEPROM.get(0, magic);
-    EEPROM.get(WIFI_OFFSET, ssid);
-    EEPROM.get(WIFI_OFFSET + 32, password);
-
-    readConfig();
 
     if (memcmp(magic, magicBytes, 2) == 0)
     {
+        // config read sucessfully
+        EEPROM.get(WIFI_OFFSET, ssid);
+        EEPROM.get(WIFI_OFFSET + 32, password);
+
+        readConfig();
+
+        Serial.println(F("Config read successfully"));
+    }
+    else
+    {
+        // config is incorrect, save default one
+        EEPROM.put(0, magicBytes);
+        EEPROM.put(WIFI_OFFSET, ssid);
+        EEPROM.put(WIFI_OFFSET + 32, password);
+
+        writeConfig();
+
+        Serial.println(F("Config incorrect, overwriting"));
+    }
+
+    // try to connect to access point
+    if (ssid[0] != '\0')
+    {
         WiFi.begin(ssid, password[0] == '\0' ? NULL : password);
+
+        delay(1000);
 
         if (wifiConnected())
         {
             Serial.print(F("Connected to "));
             Serial.print(ssid);
-            Serial.print(F(" with "));
+            Serial.print(F(" with IP "));
             Serial.println(WiFi.localIP());
 
             WiFi.mode(WIFI_STA);
@@ -349,14 +375,16 @@ void ConfigManager::setup()
             startApi();
         }
     }
-    else
+
+    // could not connect to AP or there is no configuration for it
+    if(WiFi.status() != WL_CONNECTED)
     {
-        // We are at a cold start, don't bother timeing out.
         apTimeout = 0;
 
         startAP();
     }
 
+    //
     startWebServer();
 }
 
