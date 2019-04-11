@@ -9,7 +9,7 @@ const char mimePlain[] PROGMEM = "text/plain";
 
 ConfigManager::ConfigManager()
 {
-    this->setAPFilename("index.html");
+    this->setAPFilename("/index.html");
 }
 
 void ConfigManager::setAPName(const char *name)
@@ -104,7 +104,9 @@ void ConfigManager::handleGetRoot()
     File f = SPIFFS.open(apFilename, "r");
     if (!f)
     {
-        Serial.println(F("file open failed"));
+        Serial.print(F("file "));
+        Serial.print(apFilename);
+        Serial.println(F(" open failed"));
         server->send(404, FPSTR(mimeHTML), F("File not found"));
         return;
     }
