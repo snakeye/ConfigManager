@@ -661,7 +661,7 @@ class ConfigManager
     void setup();
 
     /**
-     * @brief
+     * @brief Start Access Point mode
      *
      */
     void startAP();
@@ -670,7 +670,7 @@ class ConfigManager
      * @brief
      *
      */
-    void startApi();
+    void startApi(const char* ssid);
 
     /**
      * @brief

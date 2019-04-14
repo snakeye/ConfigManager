@@ -367,19 +367,12 @@ void ConfigManager::setup()
 
         if (wifiConnected())
         {
-            Serial.print(F("Connected to "));
-            Serial.print(ssid);
-            Serial.print(F(" with IP "));
-            Serial.println(WiFi.localIP());
-
-            WiFi.mode(WIFI_STA);
-
-            startApi();
+            startApi(ssid);
         }
     }
 
     // could not connect to AP or there is no configuration for it
-    if(WiFi.status() != WL_CONNECTED)
+    if (WiFi.status() != WL_CONNECTED)
     {
         apTimeout = 0;
 
@@ -429,14 +422,19 @@ void ConfigManager::startAP()
 
     Serial.println(F("Starting Access Point"));
 
+    WiFi.disconnect();
+    WiFi.softAPdisconnect();
+    WiFi.mode(WIFI_OFF);
+
+    delay(500);
+
     WiFi.mode(WIFI_AP);
+
+    WiFi.softAPConfig(IPAddress(192, 168, 1, 1), IPAddress(192, 168, 1, 1), IPAddress(255, 255, 255, 0));
+
     WiFi.softAP(apName, apPassword);
 
-    delay(500); // Need to wait to get IP
-
-    IPAddress ip(192, 168, 1, 1);
-    IPAddress NMask(255, 255, 255, 0);
-    WiFi.softAPConfig(ip, ip, NMask);
+    delay(1000); // Need to wait to get IP
 
     IPAddress myIP = WiFi.softAPIP();
     Serial.print("AP IP address: ");
@@ -444,14 +442,23 @@ void ConfigManager::startAP()
 
     dnsServer.reset(new DNSServer);
     dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
-    dnsServer->start(DNS_PORT, "*", ip);
+    dnsServer->start(DNS_PORT, "*", IPAddress(192, 168, 1, 1));
 
     apStart = millis();
 }
 
-void ConfigManager::startApi()
+void ConfigManager::startApi(const char *ssid)
 {
     mode = MODE_API;
+
+    Serial.print(F("Connected to "));
+    Serial.print(ssid);
+    Serial.print(F(" with IP "));
+    Serial.println(WiFi.localIP());
+
+    WiFi.mode(WIFI_STA);
+
+    wifi_station_dhcpc_start();
 }
 
 void ConfigManager::readConfig()
