@@ -16,7 +16,12 @@
             </div>
 
             <div class="text-right mb-4">
-                <button v-if="!connected" class="btn --primary" @click="onConnect" :disabled="!isConnectAvailable">Connect</button>
+                <button
+                    v-if="!connected"
+                    class="btn --primary"
+                    @click="onConnect"
+                    :disabled="!isConnectAvailable"
+                >Connect</button>
                 <button v-if="connected" class="btn --primary" @click="onDisconnect">Disconnect</button>
             </div>
 
@@ -50,6 +55,7 @@
 <script>
 import { get, post } from "../lib/request";
 import {
+    URL_WIFI,
     URL_WIFI_SCAN,
     URL_WIFI_CONNECT,
     URL_WIFI_DISCONNECT
@@ -59,16 +65,18 @@ export default {
     data: () => ({
         ssid: "",
         password: "",
+        mode: "",
         connected: false,
         isScanning: false,
         networks: []
     }),
     computed: {
         isConnectAvailable() {
-            return this.ssid !== '';
+            return this.ssid !== "";
         }
     },
     beforeMount() {
+        this.getStatus();
         this.scan();
     },
     methods: {
@@ -81,6 +89,16 @@ export default {
             } else if (net.rssi > -80) {
             } else {
             }
+        },
+        getStatus() {
+            get(URL_WIFI)
+                .then(connection => {
+                    this.mode = connection.mode;
+                    this.connected = connection.connected;
+                })
+                .catch(() => {
+                    //
+                });
         },
         scan() {
             this.isScanning = true;

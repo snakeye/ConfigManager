@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-if="schema.length > 0">
         <h2 class="mb-4">
             <v-icon icon="cog-solid" class="w-5 h-5 mr-2"/>App settings
         </h2>

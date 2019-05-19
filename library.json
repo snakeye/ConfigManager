@@ -1,6 +1,6 @@
 {
   "name": "WiFiConfig",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "keywords": "wifi, wi-fi, config, rest, vuejs",
   "description": "WiFi connection and configuration manager for ESP8266 and ESP32",
   "repository": {

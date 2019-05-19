@@ -52,6 +52,10 @@ void ConfigManager::setAPICallback(std::function<void(WebServer *)> callback)
     this->apiCallback = callback;
 }
 
+/**
+ * @brief
+ *
+ */
 void ConfigManager::loop()
 {
     if (mode == MODE_AP && apTimeout > 0 && ((millis() - apStart) / 1000) > apTimeout)
@@ -70,11 +74,21 @@ void ConfigManager::loop()
     }
 }
 
+/**
+ * @brief
+ *
+ */
 void ConfigManager::save()
 {
     this->writeConfig();
 }
 
+/**
+ * @brief
+ *
+ * @param jsonString
+ * @return JsonObject&
+ */
 JsonObject &ConfigManager::decodeJson(String jsonString)
 {
     DynamicJsonBuffer jsonBuffer;
@@ -124,9 +138,27 @@ void ConfigManager::handleGetWifi()
     DynamicJsonBuffer jsonBuffer;
     JsonObject &res = jsonBuffer.createObject();
 
-    WiFiMode_t mode = WiFi.getMode();
+    // WiFi mode
+    switch (WiFi.getMode())
+    {
+    case WIFI_OFF:
+        res.set("mode", "off");
+        break;
+    case WIFI_STA:
+        res.set("mode", "sta");
+        break;
+    case WIFI_AP:
+        res.set("mode", "ap");
+        break;
+    case WIFI_AP_STA:
+        res.set("mode", "ap_sta");
+        break;
+    default:
+        res.set("mode", "");
+        break;
+    }
 
-    res.set("mode", mode);
+    // connection status
     res.set("connected", WiFi.isConnected());
 
     String body;
@@ -217,11 +249,27 @@ void ConfigManager::handlePostConnect()
     server->send(204, FPSTR(mimePlain), F("Saved. Will attempt to reboot."));
 }
 
+/**
+ * @brief Disconnect from the access point
+ *
+ */
 void ConfigManager::handlePostDisconnect()
 {
+    char ssidChar[32] = {0};
+    char passwordChar[64] = {0};
+
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
 
+    // clear saved connection parameters
+    EEPROM.put(0, magicBytes);
+    EEPROM.put(WIFI_OFFSET, ssidChar);
+    EEPROM.put(WIFI_OFFSET + 32, passwordChar);
+    EEPROM.commit();
+
+    server->send(204, FPSTR(mimePlain), F("Saved. Will attempt to reboot."));
+
+    // Restart server
     ESP.restart();
 }
 
@@ -266,6 +314,10 @@ void ConfigManager::handleGetSettings()
     server->send(200, FPSTR(mimeJSON), body);
 }
 
+/**
+ * @brief Update settings
+ *
+ */
 void ConfigManager::handlePostSettings()
 {
     JsonObject &obj = this->decodeJson(server->arg("plain"));
@@ -286,6 +338,10 @@ void ConfigManager::handlePostSettings()
     server->send(204, FPSTR(mimeJSON), "");
 }
 
+/**
+ * @brief Handle 404 Not Found error
+ *
+ */
 void ConfigManager::handleNotFound()
 {
     if (!isIp(server->hostHeader()))
@@ -300,6 +356,12 @@ void ConfigManager::handleNotFound()
     server->client().stop();
 }
 
+/**
+ * @brief
+ *
+ * @return true
+ * @return false
+ */
 bool ConfigManager::wifiConnected()
 {
     Serial.print(F("Waiting for WiFi to connect"));
@@ -325,6 +387,10 @@ bool ConfigManager::wifiConnected()
     return false;
 }
 
+/**
+ * @brief
+ *
+ */
 void ConfigManager::setup()
 {
     char magic[2] = {0};
@@ -383,6 +449,10 @@ void ConfigManager::setup()
     startWebServer();
 }
 
+/**
+ * @brief
+ *
+ */
 void ConfigManager::startWebServer()
 {
     const char *headerKeys[] = {"Content-Type"};
@@ -416,6 +486,10 @@ void ConfigManager::startWebServer()
     server->begin();
 }
 
+/**
+ * @brief
+ *
+ */
 void ConfigManager::startAP()
 {
     mode = MODE_AP;
@@ -447,6 +521,11 @@ void ConfigManager::startAP()
     apStart = millis();
 }
 
+/**
+ * @brief
+ *
+ * @param ssid
+ */
 void ConfigManager::startApi(const char *ssid)
 {
     mode = MODE_API;
@@ -461,6 +540,10 @@ void ConfigManager::startApi(const char *ssid)
     wifi_station_dhcpc_start();
 }
 
+/**
+ * @brief
+ *
+ */
 void ConfigManager::readConfig()
 {
     byte *ptr = (byte *)config;
@@ -471,6 +554,10 @@ void ConfigManager::readConfig()
     }
 }
 
+/**
+ * @brief
+ *
+ */
 void ConfigManager::writeConfig()
 {
     byte *ptr = (byte *)config;
@@ -482,6 +569,12 @@ void ConfigManager::writeConfig()
     EEPROM.commit();
 }
 
+/**
+ * @brief
+ *
+ * @param str
+ * @return boolean
+ */
 boolean ConfigManager::isIp(String str)
 {
     for (unsigned int i = 0; i < str.length(); i++)
@@ -495,6 +588,12 @@ boolean ConfigManager::isIp(String str)
     return true;
 }
 
+/**
+ * @brief
+ *
+ * @param ip
+ * @return String
+ */
 String ConfigManager::toStringIP(IPAddress ip)
 {
     String res = "";
