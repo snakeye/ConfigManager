@@ -1,4 +1,6 @@
 # WiFi configuration manager
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsnakeye%2FWifiConfig.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsnakeye%2FWifiConfig?ref=badge_shield)
+
 
 Wifi connection and configuration manager for ESP8266 and ESP32.
 
@@ -101,3 +103,7 @@ automatically by the JavaScript application.
 * [HTTP Endpoints Blueprint](/docs/dist/api.apib)
 * [Frontend development](/docs/frontend.md) documentation
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsnakeye%2FWifiConfig.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsnakeye%2FWifiConfig?ref=badge_large)
