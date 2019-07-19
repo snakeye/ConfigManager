@@ -1,5 +1,7 @@
 # WiFi configuration manager
 
+[![Known Vulnerabilities](https://snyk.io//test/github/snakeye/WifiConfig/badge.svg?targetFile=package.json)](https://snyk.io//test/github/snakeye/WifiConfig?targetFile=package.json)
+
 Wifi connection and configuration manager for ESP8266 and ESP32.
 
 Based on [ConfigManager](https://github.com/snakeye/ConfigManager) library. The major difference
