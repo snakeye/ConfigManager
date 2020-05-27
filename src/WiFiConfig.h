@@ -17,7 +17,7 @@
 #include <functional>
 #include <list>
 
-#include "ArduinoJson.h"
+#include <ArduinoJson.h>
 
 #include "typename.h"
 
@@ -137,7 +137,7 @@ class ConfigParameter : public ConfigParameterInterface
      * @param mode parameter mode, optional
      * @param cb callback, optional
      */
-    ConfigParameter(const char *name, T *ptr, Metadata *metadata = NULL, ParameterMode mode = PARAMETER_BOTH, std::function<void(const char *)> cb = NULL)
+    ConfigParameter(const char *name, T *ptr, Metadata *metadata = NULL, ParameterMode mode = PARAMETER_BOTH, std::function<void(String)> cb = NULL)
     {
         this->name = name;
         this->ptr = ptr;
@@ -205,10 +205,10 @@ class ConfigParameter : public ConfigParameterInterface
     }
 
   private:
-    const char *name;
+    String name;
     T *ptr;
     Metadata *metadata;
-    std::function<void(const char *)> cb;
+    std::function<void(String)> cb;
     ParameterMode mode;
 };
 
