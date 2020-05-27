@@ -11,7 +11,7 @@
     "start:api": "mkdir -p docs/dist; aglio -i docs/api.apib --compile -o docs/dist/api.apib; drakov -f docs/dist/api.apib -p 3000 --autoOptions --method OPTIONS",
     "build:api": "mkdir -p docs/dist; aglio -i docs/api.apib --compile -o docs/dist/api.apib; aglio -i docs/api.apib -o docs/dist/api.html",
     "build:dev": "webpack --config src-js/webpack.dev.js --progress",
-    "build:live": "webpack --config src-js/webpack.live.js --progress"
+    "build:live": "NODE_ENV=production webpack --config src-js/webpack.live.js --progress"
   },
   "dependencies": {
     "vue": "^2"

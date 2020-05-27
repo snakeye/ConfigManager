@@ -18,4 +18,11 @@ module.exports = {
     },
     variants: {},
     plugins: [],
-  }
+    purge:{
+        content:[
+            './src-js/**/*.html',
+            './src-js/**/*.vue',
+            './src-js/**/*.jsx',
+        ]
+    }
+}
