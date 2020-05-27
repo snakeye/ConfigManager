@@ -2,7 +2,7 @@ var tailwindcss = require('tailwindcss');
 
 module.exports = {
     plugins: [
-        tailwindcss('./src-js/tailwind.js'),
+        require('tailwindcss'),
         require('autoprefixer')(),
         require('cssnano')(),
     ]

@@ -1,52 +1,48 @@
 <template>
-    <div class>
-        <h2 class="mb-4">
-            <v-icon icon="wifi-solid" class="w-5 h-5 mr-2"/>WiFi settings
-        </h2>
+    <div class="settings-group">
+        <div class="form-group">
+            <label>Access point</label>
+            <input type="text" class="form-control" v-model="ssid">
+        </div>
 
-        <div class="settings-group">
-            <div class="form-group">
-                <label>Access point</label>
-                <input type="text" class="form-control" v-model="ssid">
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" class="form-control" v-model="password">
+        </div>
+
+        <div class="text-right mb-4">
+            <button
+                v-if="!connected"
+                class="btn --primary"
+                @click="onConnect"
+                :disabled="!isConnectAvailable"
+            >Connect</button>
+            <button v-if="connected" class="btn --primary" @click="onDisconnect">Disconnect</button>
+        </div>
+
+        <div class="border-t pt-4">
+            <h3 class="fong-bold">Available networks</h3>
+
+            <div class="mt-4">
+                <button class="btn --secondary --sm" @click="scan" :disabled="isScanning">Scan</button>
             </div>
 
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" class="form-control" v-model="password">
-            </div>
+            <v-loading v-if="isScanning" />
 
-            <div class="text-right mb-4">
-                <button
-                    v-if="!connected"
-                    class="btn --primary"
-                    @click="onConnect"
-                    :disabled="!isConnectAvailable"
-                >Connect</button>
-                <button v-if="connected" class="btn --primary" @click="onDisconnect">Disconnect</button>
-            </div>
-
-            <div class="border-t pt-4">
-                <h3 class="mb-4">Available networks</h3>
-
-                <div class="mb-4">
-                    <button class="btn --secondary --sm" @click="scan">Scan</button>
+            <div
+                v-for="(net, index) in networks"
+                :key="`net-${index}`"
+                class="flex flex-row -mx-2 p-2 hover:bg-grey-lighter cursor-pointer"
+                @click="selectNetwork(net)"
+            >
+                <div class="px-2">
+                    <v-icon v-if="!net.open" icon="lock-solid" class="w-4 h-4"/>
+                    <span v-else class="w-4 inline-flex"></span>
                 </div>
 
-                <div
-                    v-for="(net, index) in networks"
-                    :key="`net-${index}`"
-                    class="flex flex-row -mx-2 p-2 hover:bg-grey-lighter cursor-pointer"
-                    @click="selectNetwork(net)"
-                >
-                    <div class="px-2">
-                        <v-icon v-if="!net.open" icon="lock-solid" class="w-4 h-4"/>
-                        <span v-else class="w-4 inline-flex"></span>
-                    </div>
+                <div class="flex-1 px-2">{{ net.ssid }}</div>
 
-                    <div class="flex-1 px-2">{{ net.ssid }}</div>
-
-                    <div class="px-2">{{ net.rssi }}</div>
-                </div>
+                <div class="px-2">{{ net.rssi }}</div>
             </div>
         </div>
     </div>
@@ -61,7 +57,12 @@ import {
     URL_WIFI_DISCONNECT
 } from "../lib/api";
 
+import Loading from "./Loading.vue";
+
 export default {
+    components: {
+        'v-loading': Loading,
+    },
     data: () => ({
         ssid: "",
         password: "",
@@ -96,9 +97,7 @@ export default {
                     this.mode = connection.mode;
                     this.connected = connection.connected;
                 })
-                .catch(() => {
-                    //
-                });
+                .catch(() => {});
         },
         scan() {
             this.isScanning = true;

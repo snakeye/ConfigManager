@@ -1,9 +1,5 @@
 <template>
     <div v-if="schema.length > 0">
-        <h2 class="mb-4">
-            <v-icon icon="cog-solid" class="w-5 h-5 mr-2"/>App settings
-        </h2>
-
         <div v-for="group in schema" :key="`settings-group-${group.name}`">
             <v-settings-group
                 :group="group"
