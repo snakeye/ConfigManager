@@ -4,6 +4,10 @@
             Configuration Manager
         </h1>
 
+        <div class="mb-8 text-right">
+            <button @click="onReboot">Reboot</button>
+        </div>
+
         <v-wifi class="mb-8" />
 
         <hr class="border-t my-4" />
@@ -13,13 +17,21 @@
 </template>
 
 <script>
+import { post } from "../lib/request";
+
 import WiFi from "./WiFi.vue";
 import Settings from "./Settings.vue";
+import { URL_REBOOT } from '../lib/api';
 
 export default {
     components: {
         "v-wifi": WiFi,
         "v-settings": Settings
+    },
+    methods: {
+        onReboot() {
+            post(URL_REBOOT);
+        }
     }
 };
 </script>

@@ -561,6 +561,11 @@ class ConfigManager
 
     /**
      * @brief
+     */
+    void handleReboot();
+
+    /**
+     * @brief
      *
      */
     void handleGetWifi();
@@ -600,6 +605,11 @@ class ConfigManager
      *
      */
     void handlePostSettings();
+
+    /**
+     * @brief clean settings
+     */
+    void handleDeleteSettings();
 
     /**
      * @brief
