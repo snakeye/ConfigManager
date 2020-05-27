@@ -7,7 +7,7 @@
 @tailwind utilities;
 
 body {
-  @apply h-full bg-gray-100 text-base leading-normal text-black font-sans;
+  @apply h-full bg-gray-100 text-base leading-normal text-main font-sans;
 }
 
 .page-heading {
@@ -15,33 +15,48 @@ body {
 }
 
 a {
+    @apply text-main font-semibold;
+    transition: color 0.3s ease-in-out;
 
+    &:hover {
+        @apply text-primary;
+        transition: color 0.3s ease-in-out;
+    }
 }
 
 .btn {
-  @apply inline-block text-center px-3 py-2 rounded;
+  @apply inline-block text-center px-3 py-2 rounded-md font-semibold;
+  transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+
+  &:hover {
+    transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+  }
+
+  &:focus, &:active {
+      @apply border-0;
+  }
 
   &.--primary {
-    @apply bg-green-700 text-white;
+    @apply bg-primary-light text-primary;
 
     &:hover {
-      @apply bg-green-600;
+      @apply bg-primary text-white;
     }
   }
 
   &.--secondary {
-    @apply border bg-gray-200;
+    @apply bg-secondary-light text-secondary;
 
     &:hover {
-      @apply bg-gray-400;
+      @apply bg-secondary text-white;
     }
   }
 
   &:disabled {
-    @apply bg-gray-500 cursor-not-allowed;
+    @apply bg-gray-300 cursor-not-allowed text-gray-100;
 
     &:hover {
-      @apply bg-gray-500;
+      @apply bg-gray-300;
     }
   }
 }

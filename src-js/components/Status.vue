@@ -1,6 +1,6 @@
 <template>
     <div>
-        <button @click="onReboot">Reboot</button>
+        <button @click="onReboot" class="btn --secondary">Reboot</button>
     </div>
 </template>
 
