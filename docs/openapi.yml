@@ -64,6 +64,7 @@ components:
           enum:
             - string
             - int
+            - bool
 
 paths:
   /:

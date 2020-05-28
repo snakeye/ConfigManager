@@ -1,8 +1,8 @@
 <template>
     <div class="settings-group">
-        <h3>{{ group.label }}</h3>
+        <h3 class="font-semibold">{{ group.label }}</h3>
 
-        <p class="text-sm">{{ group.description }}</p>
+        <p class="text-sm text-main-light">{{ group.description }}</p>
 
         <div
             v-for="param in group.params"

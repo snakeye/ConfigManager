@@ -2,12 +2,12 @@
     <div class="settings-group">
         <div class="form-group">
             <label>Access point</label>
-            <input type="text" class="form-control" v-model="ssid">
+            <input type="text" class="form-control mt-1" v-model="ssid">
         </div>
 
         <div class="form-group">
             <label>Password</label>
-            <input type="password" class="form-control" v-model="password">
+            <input type="password" class="form-control mt-1" v-model="password">
         </div>
 
         <div class="text-right mb-4">
@@ -21,9 +21,9 @@
         </div>
 
         <div class="border-t pt-4">
-            <h3 class="fong-bold">Available networks</h3>
+            <h3 class="font-semibold">Available networks</h3>
 
-            <div class="mt-4">
+            <div class="my-4">
                 <button class="btn --secondary --sm" @click="scan" :disabled="isScanning">Scan</button>
             </div>
 
@@ -32,7 +32,7 @@
             <div
                 v-for="(net, index) in networks"
                 :key="`net-${index}`"
-                class="flex flex-row -mx-2 p-2 hover:bg-grey-lighter cursor-pointer"
+                class="flex flex-row -mx-2 p-2 hover:bg-grey-lighter cursor-pointer text-sm"
                 @click="selectNetwork(net)"
             >
                 <div class="px-2">

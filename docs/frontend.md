@@ -20,3 +20,9 @@ Generate API documentation in HTML format
 ```
 npx redoc-cli bundle -o docs/dist/index.html docs/openapi.yml
 ```
+
+## Mock server
+
+```
+prism mock docs/openapi.yml
+```

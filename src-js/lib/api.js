@@ -1,5 +1,5 @@
-//const api = (url) => 'http://localhost:3000' + url;
-const api = (url) => url;
+const api = (url) => 'http://localhost:4010' + url;
+// const api = (url) => url;
 
 export const URL_REBOOT = api('/reboot');
 

@@ -10,8 +10,12 @@ body {
   @apply h-full bg-gray-100 text-base leading-normal text-main font-sans;
 }
 
+h1, h2, h3 {
+    @apply font-semibold text-main-dark;
+}
+
 .page-heading {
-    @apply font-bold text-2xl;
+    @apply text-2xl;
 }
 
 a {
@@ -34,6 +38,7 @@ a {
 
   &:focus, &:active {
       @apply border-0;
+      outline: none;
   }
 
   &.--primary {
@@ -62,10 +67,23 @@ a {
 }
 
 .form-group {
-  @apply mb-4;
+  @apply mb-4 text-sm;
+
+  label {
+    @apply text-main;
+  }
+
+  input {
+    @apply text-main-dark;
+  }
 }
 
 .form-control {
   @apply block w-full border rounded px-3 py-2;
+
+  &:focus {
+      @apply border-primary;
+      outline: none;
+  }
 }
 
