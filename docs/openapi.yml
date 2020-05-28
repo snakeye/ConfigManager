@@ -68,6 +68,7 @@ components:
 paths:
   /:
     get:
+      description: Root URL for the API
       responses:
         '200':
           description: OK
@@ -219,6 +220,7 @@ paths:
 
   /reboot:
     post:
+      description: Reboot the device
       responses:
         '204':
           description: OK
