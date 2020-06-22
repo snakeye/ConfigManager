@@ -1,0 +1,227 @@
+openapi: '3.0.2'
+
+info:
+  title: WiFi Config API
+  version: '1.0'
+  contact:
+    name: Andrey Ovcharov
+    email: andrew.ovcharov@gmail.com
+    url: https://en.ovcharov.me/
+
+servers:
+  - url: http://localhost:3000/
+    description: Local mock server
+
+components:
+  schemas:
+    WiFiStatus:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum:
+            - sta
+            - ap
+        connected:
+          type: boolean
+    WiFiAccessPoint:
+      type: object
+      properties:
+        ssid:
+          type: string
+        channel:
+          type: integer
+        rssi:
+          type: integer
+        open:
+          type: boolean
+
+    SettingsGroup:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        params:
+          type: array
+          items:
+            $ref: '#/components/schemas/SettingsValue'
+
+    SettingsValue:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum:
+            - string
+            - int
+            - bool
+
+paths:
+  /:
+    get:
+      description: Root URL for the API
+      responses:
+        '200':
+          description: OK
+
+  /wifi:
+    get:
+      description: Get current WiFi Status
+      responses:
+        '200':
+          description: Return status of WiFi connection
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/WiFiStatus'
+              example:
+                mode: sta
+                connected: false
+
+  /wifi/scan:
+    get:
+      description: Scan for available WiFi Access Points
+      responses:
+        '200':
+          description: List of available WiFi Access Points
+          content:
+            "application/json":
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WiFiAccessPoint'
+              example:
+                - ssid: Access Point 1
+                  channel: 1
+                  rssi: -58
+                  open: false
+                - ssid: Access Point 2
+                  channel: 2
+                  rssi: -99
+                  open: true
+
+
+  /wifi/connect:
+    post:
+      description: Connect to the Access Point
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              type: object
+              properties:
+                ssid:
+                  type: string
+                password:
+                  type: string
+            example:
+              ssid: Access Point 1
+              password: qwerty123
+      responses:
+        '204':
+          description: OK
+        '400':
+          description: Error
+
+  /wifi/disconnect:
+    post:
+      description: Disconnect from the Access Point
+      responses:
+        '204':
+          description: OK
+        '400':
+          description: Error
+
+  /settings:
+    options:
+      description: Get settings schema
+      responses:
+        '200':
+          description: Settings schema
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SettingsGroup'
+              example:
+                - name: co2
+                  label: CO2 Levels
+                  params:
+                    - name: warning
+                      label: Warning
+                      description: Warning CO2 level in ppm
+                      type: int
+                    - name: danger
+                      label: Danger
+                      description: Dangerous CO2 level in ppm
+                      type: int
+                - name: mqtt
+                  label: MQTT Settings
+                  description: Connect the device to the MQTT Server
+                  params:
+                    - name: enabled
+                      label: Enabled
+                      type: bool
+                    - name: server
+                      label: Server
+                      type: string
+                    - name: port
+                      label: Port
+                      type: int
+    get:
+      description: Get settings values
+      responses:
+        '200':
+          description: Get current values
+          content:
+            'application/json':
+              schema:
+                type: object
+              example:
+                co2:
+                  warning: 800
+                  danger: 1400
+                mqtt:
+                  enabled: false
+                  server: 'mqtt.server.com'
+                  port: 1234
+    post:
+      description: Update settings
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              type: object
+            example:
+              co2:
+                warning: 800
+                danger: 1400
+              mqtt:
+                enabled: false
+                server: 'mqtt.server.com'
+                port: 1234
+      responses:
+        '204':
+          description: Ok
+        '400':
+          description: Error
+
+
+
+  /reboot:
+    post:
+      description: Reboot the device
+      responses:
+        '204':
+          description: OK

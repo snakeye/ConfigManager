@@ -1,15 +1,13 @@
 <template>
     <div class="settings-group">
-        <div class="mb-4">
-            <h3>{{ group.label }}</h3>
+        <h3 class="font-semibold">{{ group.label }}</h3>
 
-            <p class="text-sm">{{ group.description }}</p>
-        </div>
+        <p class="text-sm text-main-light">{{ group.description }}</p>
 
         <div
             v-for="param in group.params"
             :key="`settings-group-${group.name}-${param.name}`"
-            class
+            class="mt-4"
         >
             <v-settings-param
                 :group-name="group.name"
@@ -51,6 +49,6 @@ export default {
 
 <style lang="scss">
 .settings-group {
-    @apply border p-4 mb-4 rounded;
+    // @apply border p-4 mb-4 rounded;
 }
 </style>

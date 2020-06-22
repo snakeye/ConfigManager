@@ -131,6 +131,17 @@ void ConfigManager::handleGetRoot()
 }
 
 /**
+ *
+ */
+void ConfigManager::handleReboot()
+{
+    server->send(204, FPSTR(mimePlain), F("Saved. Will attempt to reboot."));
+
+    // Restart server
+    ESP.restart();
+}
+
+/**
  * Return current WiFi mode
  */
 void ConfigManager::handleGetWifi()
@@ -247,6 +258,9 @@ void ConfigManager::handlePostConnect()
     EEPROM.commit();
 
     server->send(204, FPSTR(mimePlain), F("Saved. Will attempt to reboot."));
+
+    // Restart server
+    ESP.restart();
 }
 
 /**
@@ -336,6 +350,20 @@ void ConfigManager::handlePostSettings()
     writeConfig();
 
     server->send(204, FPSTR(mimeJSON), "");
+}
+
+/**
+ * Clear settings
+ */
+void ConfigManager::handleDeleteSettings()
+{
+    EEPROM.put(0, magicBytes);
+    EEPROM.commit();
+
+    server->send(204, FPSTR(mimePlain), F("Saved. Will attempt to reboot."));
+
+    // Restart server
+    ESP.restart();
 }
 
 /**
@@ -464,6 +492,8 @@ void ConfigManager::startWebServer()
 
     server->on("/", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleGetRoot, this));
 
+    server->on("/reboot", HTTPMethod::HTTP_POST, std::bind(&ConfigManager::handleReboot, this));
+
     // wifi parameters
     server->on("/wifi", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleGetWifi, this));
     server->on("/wifi/scan", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleGetWifiScan, this));
@@ -474,6 +504,7 @@ void ConfigManager::startWebServer()
     server->on("/settings", HTTPMethod::HTTP_OPTIONS, std::bind(&ConfigManager::handleGetSettingsSchema, this));
     server->on("/settings", HTTPMethod::HTTP_GET, std::bind(&ConfigManager::handleGetSettings, this));
     server->on("/settings", HTTPMethod::HTTP_POST, std::bind(&ConfigManager::handlePostSettings, this));
+    server->on("/settings", HTTPMethod::HTTP_DELETE, std::bind(&ConfigManager::handleDeleteSettings, this));
 
     // not found handling
     server->onNotFound(std::bind(&ConfigManager::handleNotFound, this));

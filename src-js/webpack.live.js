@@ -25,18 +25,18 @@ module.exports = merge(baseWebpackConfig, {
             NODE_ENV: JSON.stringify('production'),
         }),
         new webpack.HashedModuleIdsPlugin(),
-        new PurgecssPlugin({
-            paths: glob.sync([
-                path.join('./src-js/index.html'),
-                path.join('./src-js/**/*.vue'),
-                path.join('./src-js/**/*.js'),
-            ]),
-            extractors: [{
-                extractor: TailwindExtractor,
-                // Specify the file extensions to include when scanning for
-                // class names.
-                extensions: ['html', 'js', 'vue'],
-            }],
-        }),
+        // new PurgecssPlugin({
+        //     paths: glob.sync([
+        //         path.join('./src-js/index.html'),
+        //         path.join('./src-js/**/*.vue'),
+        //         path.join('./src-js/**/*.js'),
+        //     ]),
+        //     extractors: [{
+        //         extractor: TailwindExtractor,
+        //         // Specify the file extensions to include when scanning for
+        //         // class names.
+        //         extensions: ['html', 'js', 'vue'],
+        //     }],
+        // }),
     ],
 });

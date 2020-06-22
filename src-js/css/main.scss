@@ -1,47 +1,89 @@
 @charset "utf-8";
 
-@tailwind preflight;
+@tailwind base;
 
 @tailwind components;
 
+@tailwind utilities;
+
 body {
-  @apply h-full bg-white text-base leading-normal text-black font-sans;
+  @apply h-full bg-gray-100 text-base leading-normal text-main font-sans;
+}
+
+h1, h2, h3 {
+    @apply font-semibold text-main-dark;
+}
+
+.page-heading {
+    @apply text-2xl;
+}
+
+a {
+    @apply text-main font-semibold;
+    transition: color 0.3s ease-in-out;
+
+    &:hover {
+        @apply text-primary;
+        transition: color 0.3s ease-in-out;
+    }
 }
 
 .btn {
-  @apply inline-block text-center px-3 py-2 rounded;
+  @apply inline-block text-center px-3 py-2 rounded-md font-semibold;
+  transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+
+  &:hover {
+    transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+  }
+
+  &:focus, &:active {
+      @apply border-0;
+      outline: none;
+  }
 
   &.--primary {
-    @apply bg-green-darker text-white;
+    @apply bg-primary-light text-primary;
 
     &:hover {
-      @apply bg-green-dark;
+      @apply bg-primary text-white;
     }
   }
 
   &.--secondary {
-    @apply border bg-grey-lightest;
+    @apply bg-secondary-light text-secondary;
 
     &:hover {
-      @apply bg-grey-lighter;
+      @apply bg-secondary text-white;
     }
   }
 
   &:disabled {
-    @apply bg-grey cursor-not-allowed;
+    @apply bg-gray-300 cursor-not-allowed text-gray-100;
 
     &:hover {
-      @apply bg-grey;
+      @apply bg-gray-300;
     }
   }
 }
 
 .form-group {
-  @apply mb-4;
+  @apply mb-4 text-sm;
+
+  label {
+    @apply text-main;
+  }
+
+  input {
+    @apply text-main-dark;
+  }
 }
 
 .form-control {
   @apply block w-full border rounded px-3 py-2;
+
+  &:focus {
+      @apply border-primary;
+      outline: none;
+  }
 }
 
-@tailwind utilities;

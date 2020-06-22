@@ -1,12 +1,12 @@
-    <template>
+<template>
     <div v-if="param.type === 'bool'" class="form-group">
         <input :id="paramId" type="checkbox" v-model="inputValue">
         <label :for="paramId">{{ param.label }}</label>
     </div>
     <div v-else class="form-group">
         <label :for="paramId">{{ param.label }}</label>
-        <input :id="paramId" type="text" v-model="inputValue" class="form-control">
-        <p v-if="param.description" class="text-xs">{{ param.description }}</p>
+        <input :id="paramId" type="text" v-model="inputValue" class="form-control mt-1">
+        <p v-if="param.description" class="text-xs text-main-light">{{ param.description }}</p>
     </div>
 </template>
 
