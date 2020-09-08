@@ -163,9 +163,9 @@ class ConfigParameter : public ConfigParameterInterface
      */
     void fromJson(JsonObject *json)
     {
-        if (json->containsKey(name) && json->is<T>(name))
+        if (json->containsKey(name) && json->getMember(name).is<T>()) {
         {
-            *ptr = json->get<T>(name);
+            this->update(json->getMember(name).as<T>());
         }
     }
 
@@ -176,12 +176,13 @@ class ConfigParameter : public ConfigParameterInterface
      */
     void toJson(JsonObject *json)
     {
-        json->set(name, *ptr);
+        // json->set(name, *ptr);
 
-        if (cb)
-        {
-            cb(name);
-        }
+        // if (cb)
+        // {
+        //     cb(name);
+        // }
+        json->getOrAddMember(name).set((const char*) ptr);
     }
 
     /**
@@ -191,15 +192,20 @@ class ConfigParameter : public ConfigParameterInterface
      */
     void toJsonSchema(JsonObject *json)
     {
-        json->set("name", name);
-        json->set("type", GetTypeName<T>());
+        // json->set("name", name);
+        json->getOrAddMember(name).set((const char*) name);
+        json.getOrAddMember(type).set(GetTypeName<T>());
+        // json->set("type", GetTypeName<T>());
         if (metadata != NULL)
         {
-            json->set("label", metadata->label());
+            // json->set("label", metadata->label());
+            json->getOrAddMember(label).set((const char*) this->metadata->label());
 
             if (metadata->description() != NULL)
             {
-                json->set("description", metadata->description());
+                // json->set("description", metadata->description());
+                json->getOrAddMember(description).set((const char*) this->metadata->description());
+
             }
         }
     }
@@ -253,9 +259,11 @@ class ConfigStringParameter : public ConfigParameterInterface
      */
     void fromJson(JsonObject *json)
     {
-        if (json->containsKey(name) && json->is<char *>(name))
+        // if (json->containsKey(name) && json->is<char *>(name))
+        if (json->containsKey(name) && json->getMember(name).is<T>()) 
         {
-            const char *value = json->get<const char *>(name);
+            // const char *value = json->get<const char *>(name);
+            this->update(json->getMember(name).as<T>());
 
             memset(ptr, '\0', length);
             strncpy(ptr, const_cast<char *>(value), length - 1);
@@ -269,7 +277,8 @@ class ConfigStringParameter : public ConfigParameterInterface
      */
     void toJson(JsonObject *json)
     {
-        json->set(name, ptr);
+        // json->set(name, ptr);
+        json.getOrAddMember(name).set((const char*) ptr);
     }
 
     /**
@@ -279,15 +288,20 @@ class ConfigStringParameter : public ConfigParameterInterface
      */
     void toJsonSchema(JsonObject *json)
     {
-        json->set("name", name);
-        json->set("type", "string");
+        // json->set("name", name);
+        json.getOrAddMember(name).set((const char*) name);
+        // json->set("type", "string");
+        json.getOrAddMember(type).set((const char*) "string");
+
         if (metadata != NULL)
         {
-            json->set("label", metadata->label());
+            // json->set("label", metadata->label());
+            json.getOrAddMember(label).set((const char*) metadata->label());
 
             if (metadata->description() != NULL)
             {
-                json->set("description", metadata->description());
+                // json->set("description", metadata->description());
+                json.getOrAddMember(description).set((const char*)description())
             }
         }
     }
@@ -642,7 +656,7 @@ class ConfigManager
      * @param jsonString
      * @return JsonObject&
      */
-    JsonObject &decodeJson(String jsonString);
+    JsonObject decodeJson(String jsonString);
 
     /**
      * @brief

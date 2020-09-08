@@ -89,16 +89,16 @@ void ConfigManager::save()
  * @param jsonString
  * @return JsonObject&
  */
-JsonObject &ConfigManager::decodeJson(String jsonString)
+JsonObject ConfigManager::decodeJson(String jsonString)
 {
-    DynamicJsonBuffer jsonBuffer;
+    DynamicJsonDocument jsonBuffer(1024);
 
     if (jsonString.length() == 0)
     {
         return jsonBuffer.createObject();
     }
 
-    JsonObject &obj = jsonBuffer.parseObject(jsonString);
+    JsonObject obj = jsonBuffer.parseObject(jsonString);
 
     if (!obj.success())
     {
@@ -147,7 +147,7 @@ void ConfigManager::handleReboot()
 void ConfigManager::handleGetWifi()
 {
     DynamicJsonBuffer jsonBuffer;
-    JsonObject &res = jsonBuffer.createObject();
+    JsonObject res = jsonBuffer.createObject();
 
     // WiFi mode
     switch (WiFi.getMode())
@@ -203,7 +203,7 @@ void ConfigManager::handleGetWifiScan()
     {
         for (int i = 0; i < n; i++)
         {
-            JsonObject &obj = res.createNestedObject();
+            JsonObject obj = res.createNestedObject();
 
             obj.set("ssid", WiFi.SSID(i));
             obj.set("channel", WiFi.channel(i));
@@ -232,7 +232,7 @@ void ConfigManager::handlePostConnect()
 
     if (isJson)
     {
-        JsonObject &obj = this->decodeJson(server->arg("plain"));
+        JsonObject obj = decodeJson(server->arg("plain"));
 
         ssid = obj.get<String>("ssid");
         password = obj.get<String>("password");
@@ -292,13 +292,13 @@ void ConfigManager::handlePostDisconnect()
  */
 void ConfigManager::handleGetSettingsSchema()
 {
-    DynamicJsonBuffer jsonBuffer;
-    JsonArray &res = jsonBuffer.createArray();
+    DynamicJsonDocument jsonBuffer(1024);
+    JsonArray res = jsonBuffer.createArray();
 
     std::list<ConfigParameterGroup *>::iterator it;
     for (it = groups.begin(); it != groups.end(); ++it)
     {
-        JsonObject &obj = res.createNestedObject();
+        JsonObject obj = res.createNestedObject();
         (*it)->toJsonSchema(&obj);
     }
 
@@ -313,8 +313,8 @@ void ConfigManager::handleGetSettingsSchema()
  */
 void ConfigManager::handleGetSettings()
 {
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject &res = jsonBuffer.createObject();
+    DynamicJsonDocument jsonBuffer(1024);
+    JsonObject res = jsonBuffer.createObject();
 
     std::list<ConfigParameterGroup *>::iterator it;
     for (it = groups.begin(); it != groups.end(); ++it)
@@ -334,7 +334,7 @@ void ConfigManager::handleGetSettings()
  */
 void ConfigManager::handlePostSettings()
 {
-    JsonObject &obj = this->decodeJson(server->arg("plain"));
+    JsonObject obj = decodeJson(server->arg("plain"));
     if (!obj.success())
     {
         server->send(400, FPSTR(mimeJSON), "");
