@@ -2,12 +2,11 @@
 
 void ConfigParameterGroup::toJson(JsonObject *json)
 {
-    JsonObject obj = json.createNestedObject(name);
 
     std::list<ConfigParameterInterface *>::iterator it;
     for (it = parameters.begin(); it != parameters.end(); ++it)
     {
-        (*it)->toJson(&obj);
+        (*it)->toJson(&json);
     }
 }
 
