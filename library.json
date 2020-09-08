@@ -1,6 +1,6 @@
 {
-  "name": "WiFiConfig",
-  "version": "2.1.0",
+  "name": "WiFiConfig6",
+  "version": "2.2.0",
   "keywords": "wifi, wi-fi, config, rest, vuejs",
   "description": "WiFi connection and configuration manager for ESP8266 and ESP32",
   "repository": {
@@ -18,7 +18,7 @@
   ],
   "dependencies": [{
     "name": "ArduinoJson",
-    "version": "^5.0.0",
+    "version": "^6.0.0",
     "frameworks": "arduino"
   }]
 }
