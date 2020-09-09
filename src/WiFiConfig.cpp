@@ -1,5 +1,9 @@
 #include "WiFiConfig.h"
 
+extern "C" {
+  #include "user_interface.h"
+}
+
 const byte DNS_PORT = 53;
 const char magicBytes[2] = {'C', 'M'};
 
@@ -91,21 +95,22 @@ void ConfigManager::save()
  */
 JsonObject ConfigManager::decodeJson(String jsonString)
 {
-    DynamicJsonDocument jsonBuffer(1024);
+    DynamicJsonDocument doc(512);
 
     if (jsonString.length() == 0)
     {
-        return jsonBuffer.createObject();
+        return doc.as<JsonObject>();
     }
 
-    JsonObject obj = jsonBuffer.parseObject(jsonString);
-
-    if (!obj.success())
+    auto error = deserializeJson(doc, jsonString);
+    if (error)
     {
-        return jsonBuffer.createObject();
+        Serial.println(F("deserializeJson() failed with code "));
+        Serial.println(error.c_str());
+        return doc.as<JsonObject>();
     }
 
-    return obj;
+    return doc.as<JsonObject>();
 }
 
 /**
@@ -146,34 +151,41 @@ void ConfigManager::handleReboot()
  */
 void ConfigManager::handleGetWifi()
 {
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject res = jsonBuffer.createObject();
+    DynamicJsonDocument jsonBuffer(512);
+    JsonObject res = jsonBuffer.as<JsonObject>();
 
     // WiFi mode
     switch (WiFi.getMode())
     {
     case WIFI_OFF:
-        res.set("mode", "off");
+        // res.set("mode", "off");
+        res.getOrAddMember("mode").set("off");
         break;
     case WIFI_STA:
-        res.set("mode", "sta");
+        // res.set("mode", "sta");
+        res.getOrAddMember("mode").set("sta");
         break;
     case WIFI_AP:
-        res.set("mode", "ap");
+        // res.set("mode", "ap");
+        res.getOrAddMember("mode").set("ap");
         break;
     case WIFI_AP_STA:
-        res.set("mode", "ap_sta");
+        // res.set("mode", "ap_sta");
+        res.getOrAddMember("mode").set("ap_sta");
         break;
     default:
-        res.set("mode", "");
+        // res.set("mode", "");
+        res.getOrAddMember("mode").set("");
         break;
     }
 
     // connection status
-    res.set("connected", WiFi.isConnected());
+    // res.set("connected", WiFi.isConnected());
+    res.getOrAddMember("connected").set(WiFi.isConnected());
 
     String body;
-    res.printTo(body);
+    // res.printTo(body);
+    serializeJson(res, body);
 
     server->send(200, FPSTR(mimeJSON), body);
 }
@@ -184,8 +196,8 @@ void ConfigManager::handleGetWifi()
  */
 void ConfigManager::handleGetWifiScan()
 {
-    DynamicJsonBuffer jsonBuffer;
-    JsonArray &res = jsonBuffer.createArray();
+    DynamicJsonDocument res(512);
+    // JsonObject res = jsonBuffer.as<JsonObject>();
 
     static long lastScan = 0;
     const long scanPeriod = 5000;
@@ -204,17 +216,20 @@ void ConfigManager::handleGetWifiScan()
         for (int i = 0; i < n; i++)
         {
             JsonObject obj = res.createNestedObject();
-
-            obj.set("ssid", WiFi.SSID(i));
-            obj.set("channel", WiFi.channel(i));
-            obj.set("rssi", WiFi.RSSI(i));
-            obj.set("open", WiFi.encryptionType(i) == ENC_TYPE_NONE);
+            // JsonObject obj = doc.createNestedObject();
+            obj.getOrAddMember("ssid").set(WiFi.SSID(i));
+            // obj.set("channel", WiFi.channel(i));
+            obj.getOrAddMember("channel").set(WiFi.channel(i));
+            // obj.set("rssi", WiFi.RSSI(i));
+            obj.getOrAddMember("rssi").set(WiFi.RSSI(i));
+            // obj.set("rssi", WiFi.encryptionType(i) == ENC_TYPE_NONE);
+            obj.getOrAddMember("rssi").set(WiFi.encryptionType(i) == WIFI_AUTH_OPEN);
         }
     }
 
     String body;
-    res.printTo(body);
-
+    // res.printTo(body);
+    serializeJson(res, body);
     server->send(200, FPSTR(mimeJSON), body);
 }
 
@@ -234,8 +249,8 @@ void ConfigManager::handlePostConnect()
     {
         JsonObject obj = decodeJson(server->arg("plain"));
 
-        ssid = obj.get<String>("ssid");
-        password = obj.get<String>("password");
+        ssid = obj.getMember("ssid").as<String>();
+        password = obj.getMember("password").as<String>();
     }
     else
     {
@@ -292,8 +307,8 @@ void ConfigManager::handlePostDisconnect()
  */
 void ConfigManager::handleGetSettingsSchema()
 {
-    DynamicJsonDocument jsonBuffer(1024);
-    JsonArray res = jsonBuffer.createArray();
+    DynamicJsonDocument jsonBuffer(512);
+    JsonArray res = jsonBuffer.createNestedArray();
 
     std::list<ConfigParameterGroup *>::iterator it;
     for (it = groups.begin(); it != groups.end(); ++it)
@@ -303,7 +318,8 @@ void ConfigManager::handleGetSettingsSchema()
     }
 
     String body;
-    res.printTo(body);
+    // res.printTo(body);
+    serializeJson(res, body);
 
     server->send(200, FPSTR(mimeJSON), body);
 }
@@ -313,8 +329,8 @@ void ConfigManager::handleGetSettingsSchema()
  */
 void ConfigManager::handleGetSettings()
 {
-    DynamicJsonDocument jsonBuffer(1024);
-    JsonObject res = jsonBuffer.createObject();
+    DynamicJsonDocument jsonBuffer(512);
+    JsonObject res = jsonBuffer.as<JsonObject>();
 
     std::list<ConfigParameterGroup *>::iterator it;
     for (it = groups.begin(); it != groups.end(); ++it)
@@ -323,8 +339,8 @@ void ConfigManager::handleGetSettings()
     }
 
     String body;
-    res.printTo(body);
-
+    // res.printTo(body);
+    serializeJson(res, body);
     server->send(200, FPSTR(mimeJSON), body);
 }
 
@@ -334,8 +350,10 @@ void ConfigManager::handleGetSettings()
  */
 void ConfigManager::handlePostSettings()
 {
-    JsonObject obj = decodeJson(server->arg("plain"));
-    if (!obj.success())
+    DynamicJsonDocument doc(512);
+    JsonObject obj = this->decodeJson(server->arg("plain"));
+    auto error = deserializeJson(doc, server->arg("plain"));
+    if (error)
     {
         server->send(400, FPSTR(mimeJSON), "");
         return;
@@ -568,7 +586,9 @@ void ConfigManager::startApi(const char *ssid)
 
     WiFi.mode(WIFI_STA);
 
-    wifi_station_dhcpc_start();
+    
+    (void)wifi_station_dhcpc_start();
+
 }
 
 /**
