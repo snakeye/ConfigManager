@@ -5,28 +5,19 @@
 #include <EEPROM.h>
 #include <FS.h>
 
-#if defined(ARDUINO_ARCH_ESP8266) //ESP8266
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
-#elif defined(ARDUINO_ARCH_ESP32) //ESP32
+
 #include <SPIFFS.h>
 #include <WiFi.h>
 #include <WebServer.h>
-#endif
 
 #include <functional>
 #include <list>
 
 #include <ArduinoJson.h>
-
 #include "typename.h"
 
 #define WIFI_OFFSET 2
 #define CONFIG_OFFSET 98
-
-#if defined(ARDUINO_ARCH_ESP8266) //ESP8266
-using WebServer = ESP8266WebServer;
-#endif
 
 enum Mode
 {
@@ -48,7 +39,7 @@ enum ParameterMode
  */
 class Metadata
 {
-  public:
+public:
     /**
      * @brief Metadata constructor
      *
@@ -81,7 +72,7 @@ class Metadata
         return this->_description;
     }
 
-  private:
+private:
     const char *_label;
     const char *_description;
 };
@@ -91,7 +82,7 @@ class Metadata
  */
 class ConfigParameterInterface
 {
-  public:
+public:
     /**
      * @brief
      *
@@ -127,7 +118,7 @@ class ConfigParameterInterface
 template <typename T>
 class ConfigParameter : public ConfigParameterInterface
 {
-  public:
+public:
     /**
      * @brief ConfigParameter constructor
      *
@@ -156,6 +147,11 @@ class ConfigParameter : public ConfigParameterInterface
         return this->mode;
     }
 
+    void update(T value)
+    {
+        *ptr = value;
+    }
+
     /**
      * @brief Parse configuration parameter value from JSON object
      *
@@ -163,9 +159,10 @@ class ConfigParameter : public ConfigParameterInterface
      */
     void fromJson(JsonObject *json)
     {
-        if (json->containsKey(name) && json->is<T>(name))
+        if (json->containsKey(name) && json->getMember(name).is<T>())
         {
-            *ptr = json->get<T>(name);
+
+            this->update(json->getMember(name).as<T>());
         }
     }
 
@@ -176,12 +173,13 @@ class ConfigParameter : public ConfigParameterInterface
      */
     void toJson(JsonObject *json)
     {
-        json->set(name, *ptr);
+        // json->set(name, *ptr);
 
-        if (cb)
-        {
-            cb(name);
-        }
+        // if (cb)
+        // {
+        //     cb(name);
+        // }
+        json->getOrAddMember("name").set((const char *)ptr);
     }
 
     /**
@@ -191,20 +189,24 @@ class ConfigParameter : public ConfigParameterInterface
      */
     void toJsonSchema(JsonObject *json)
     {
-        json->set("name", name);
-        json->set("type", GetTypeName<T>());
+        // json->set("name", name);
+        json->getOrAddMember("name").set(name);
+        json->getOrAddMember("type").set(GetTypeName<T>());
+        // json->set("type", GetTypeName<T>());
         if (metadata != NULL)
         {
-            json->set("label", metadata->label());
+            // json->set("label", metadata->label());
+            json->getOrAddMember("label").set(this->metadata->label());
 
             if (metadata->description() != NULL)
             {
-                json->set("description", metadata->description());
+                // json->set("description", metadata->description());
+                json->getOrAddMember("description").set(this->metadata->description());
             }
         }
     }
 
-  private:
+private:
     String name;
     T *ptr;
     Metadata *metadata;
@@ -213,11 +215,11 @@ class ConfigParameter : public ConfigParameterInterface
 };
 
 /**
- * @brief ConfigParameter of String type
- */
+    * @brief ConfigParameter of String type
+    */
 class ConfigStringParameter : public ConfigParameterInterface
 {
-  public:
+public:
     /**
      * @brief Constructor of ConfigStringParameter
      *
@@ -246,6 +248,12 @@ class ConfigStringParameter : public ConfigParameterInterface
         return this->mode;
     }
 
+    void update(const char *value)
+    {
+        memset(ptr, 0, length);
+        strncpy(ptr, value, length - 1);
+    }
+
     /**
      * @brief Get parameter value from JSON object
      *
@@ -253,9 +261,12 @@ class ConfigStringParameter : public ConfigParameterInterface
      */
     void fromJson(JsonObject *json)
     {
-        if (json->containsKey(name) && json->is<char *>(name))
+        // if (json->containsKey(name) && json->is<char *>(name))
+        if (json->containsKey(name) && json->getMember(name).is<char *>())
         {
-            const char *value = json->get<const char *>(name);
+            const char *value = json->getMember(name).as<const char *>();
+            ;
+            this->update(value);
 
             memset(ptr, '\0', length);
             strncpy(ptr, const_cast<char *>(value), length - 1);
@@ -269,7 +280,8 @@ class ConfigStringParameter : public ConfigParameterInterface
      */
     void toJson(JsonObject *json)
     {
-        json->set(name, ptr);
+        // json->set(name, ptr);
+        json->getOrAddMember("name").set((const char *)ptr);
     }
 
     /**
@@ -279,20 +291,25 @@ class ConfigStringParameter : public ConfigParameterInterface
      */
     void toJsonSchema(JsonObject *json)
     {
-        json->set("name", name);
-        json->set("type", "string");
+        // json->set("name", name);
+        json->getOrAddMember("name").set((const char *) name);
+        // json->set("type", "string");
+        json->getOrAddMember("type").set((const char *) "string");
+
         if (metadata != NULL)
         {
-            json->set("label", metadata->label());
+            // json->set("label", metadata->label());
+            json->getOrAddMember("label").set(metadata->label());
 
             if (metadata->description() != NULL)
             {
-                json->set("description", metadata->description());
+                // json->set("description", metadata->description());
+                json->getOrAddMember("description").set(metadata->description());
             }
         }
     }
 
-  private:
+private:
     const char *name;
     Metadata *metadata;
     char *ptr;
@@ -305,7 +322,7 @@ class ConfigStringParameter : public ConfigParameterInterface
  */
 class ConfigParameterGroup
 {
-  public:
+public:
     /**
      * @brief Construct a new Config Parameter Group object
      *
@@ -328,6 +345,7 @@ class ConfigParameterGroup
      * @param mode parameter mode
      * @return ConfigParameterGroup&
      */
+
     template <typename T>
     ConfigParameterGroup &addParameter(const char *name, T *variable, Metadata *metadata = NULL, ParameterMode mode = PARAMETER_BOTH)
     {
@@ -384,7 +402,7 @@ class ConfigParameterGroup
         return name;
     }
 
-  private:
+private:
     const char *name;
     Metadata *metadata;
 
@@ -396,14 +414,14 @@ class ConfigParameterGroup
  */
 class ConfigManager
 {
-  public:
+public:
     /**
      * @brief Construct a new Config Manager object
      *
      */
     ConfigManager();
 
-  public:
+public:
     /**
      * @brief Set Access Point name
      *
@@ -530,7 +548,7 @@ class ConfigManager
      */
     void save();
 
-  private:
+private:
     Mode mode;
     void *config;
     size_t configSize;
@@ -552,7 +570,7 @@ class ConfigManager
     std::function<void(WebServer *)> apCallback;
     std::function<void(WebServer *)> apiCallback;
 
-  private:
+private:
     /**
      * @brief
      *
@@ -635,14 +653,14 @@ class ConfigManager
      */
     void handleNotFound();
 
-  private:
+private:
     /**
      * @brief
      *
      * @param jsonString
      * @return JsonObject&
      */
-    JsonObject &decodeJson(String jsonString);
+    JsonObject decodeJson(String jsonString);
 
     /**
      * @brief
@@ -680,7 +698,7 @@ class ConfigManager
      * @brief
      *
      */
-    void startApi(const char* ssid);
+    void startApi(const char *ssid);
 
     /**
      * @brief

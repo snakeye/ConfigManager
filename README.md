@@ -18,7 +18,7 @@ and REST variable configuration.
 
 ## Requires
 
-* [ArduinoJson 5.x](https://github.com/bblanchon/ArduinoJson)
+* [ArduinoJson 6.x](https://github.com/bblanchon/ArduinoJson)
 
 ## Quick Start
 
@@ -97,7 +97,7 @@ automatically by the JavaScript application.
 
 ## Things TODO / Roadmap
 
-* [ ] Migrate to ArduinoJSON v6
+* [x] Migrate to ArduinoJSON v6
 * [ ] Eliminate parallel HTTP requests
 * [ ] Proper WiFi connection handling
 * [ ] HTTP Authentication
