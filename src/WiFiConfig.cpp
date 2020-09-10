@@ -1,9 +1,5 @@
 #include "WiFiConfig.h"
 
-extern "C" {
-  #include "user_interface.h"
-}
-
 const byte DNS_PORT = 53;
 const char magicBytes[2] = {'C', 'M'};
 
@@ -95,7 +91,7 @@ void ConfigManager::save()
  */
 JsonObject ConfigManager::decodeJson(String jsonString)
 {
-    DynamicJsonDocument doc(512);
+    DynamicJsonDocument doc(1024);
 
     if (jsonString.length() == 0)
     {
@@ -151,7 +147,7 @@ void ConfigManager::handleReboot()
  */
 void ConfigManager::handleGetWifi()
 {
-    DynamicJsonDocument jsonBuffer(512);
+    DynamicJsonDocument jsonBuffer(1024);
     JsonObject res = jsonBuffer.as<JsonObject>();
 
     // WiFi mode
@@ -196,7 +192,8 @@ void ConfigManager::handleGetWifi()
  */
 void ConfigManager::handleGetWifiScan()
 {
-    DynamicJsonDocument res(512);
+    DynamicJsonDocument doc(1024);
+    JsonArray jsonArray = doc.createNestedArray();
     // JsonObject res = jsonBuffer.as<JsonObject>();
 
     static long lastScan = 0;
@@ -215,21 +212,18 @@ void ConfigManager::handleGetWifiScan()
     {
         for (int i = 0; i < n; i++)
         {
-            JsonObject obj = res.createNestedObject();
-            // JsonObject obj = doc.createNestedObject();
-            obj.getOrAddMember("ssid").set(WiFi.SSID(i));
-            // obj.set("channel", WiFi.channel(i));
-            obj.getOrAddMember("channel").set(WiFi.channel(i));
-            // obj.set("rssi", WiFi.RSSI(i));
-            obj.getOrAddMember("rssi").set(WiFi.RSSI(i));
-            // obj.set("rssi", WiFi.encryptionType(i) == ENC_TYPE_NONE);
-            obj.getOrAddMember("rssi").set(WiFi.encryptionType(i) == WIFI_AUTH_OPEN);
+            JsonObject obj = doc.createNestedObject();
+            obj["ssid"] = WiFi.SSID(i);
+            obj["channel"] = WiFi.channel(i);
+            obj["strength"] = WiFi.RSSI(i);
+            obj["open"] = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN);
+            jsonArray.add(obj);
         }
     }
 
     String body;
     // res.printTo(body);
-    serializeJson(res, body);
+    serializeJson(jsonArray, body);
     server->send(200, FPSTR(mimeJSON), body);
 }
 
@@ -307,7 +301,7 @@ void ConfigManager::handlePostDisconnect()
  */
 void ConfigManager::handleGetSettingsSchema()
 {
-    DynamicJsonDocument jsonBuffer(512);
+    DynamicJsonDocument jsonBuffer(1024);
     JsonArray res = jsonBuffer.createNestedArray();
 
     std::list<ConfigParameterGroup *>::iterator it;
@@ -329,7 +323,7 @@ void ConfigManager::handleGetSettingsSchema()
  */
 void ConfigManager::handleGetSettings()
 {
-    DynamicJsonDocument jsonBuffer(512);
+    DynamicJsonDocument jsonBuffer(1024);
     JsonObject res = jsonBuffer.as<JsonObject>();
 
     std::list<ConfigParameterGroup *>::iterator it;
@@ -350,7 +344,7 @@ void ConfigManager::handleGetSettings()
  */
 void ConfigManager::handlePostSettings()
 {
-    DynamicJsonDocument doc(512);
+    DynamicJsonDocument doc(1024);
     JsonObject obj = this->decodeJson(server->arg("plain"));
     auto error = deserializeJson(doc, server->arg("plain"));
     if (error)
@@ -552,13 +546,12 @@ void ConfigManager::startAP()
     delay(500);
 
     WiFi.mode(WIFI_AP);
-
-    WiFi.softAPConfig(IPAddress(192, 168, 1, 1), IPAddress(192, 168, 1, 1), IPAddress(255, 255, 255, 0));
-
+    IPAddress ip(192, 168, 1, 1);
+    IPAddress NMask(255, 255, 255, 0);
     WiFi.softAP(apName, apPassword);
 
     delay(1000); // Need to wait to get IP
-
+    WiFi.softAPConfig(ip, ip, NMask);
     IPAddress myIP = WiFi.softAPIP();
     Serial.print("AP IP address: ");
     Serial.println(myIP);
@@ -578,16 +571,20 @@ void ConfigManager::startAP()
 void ConfigManager::startApi(const char *ssid)
 {
     mode = MODE_API;
-
+    char hname[19];
     Serial.print(F("Connected to "));
     Serial.print(ssid);
     Serial.print(F(" with IP "));
     Serial.println(WiFi.localIP());
 
     WiFi.mode(WIFI_STA);
-
+    WiFi.setHostname(hname);
+    // // 
+    WiFi.config(0u, 0u, 0u);
+    WiFi.begin();
     
-    (void)wifi_station_dhcpc_start();
+    // (void)wifi_station_dhcpc_start();
+
 
 }
 

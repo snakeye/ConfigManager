@@ -5,14 +5,10 @@
 #include <EEPROM.h>
 #include <FS.h>
 
-#if defined(ARDUINO_ARCH_ESP8266) //ESP8266
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
-#elif defined(ARDUINO_ARCH_ESP32) //ESP32
+
 #include <SPIFFS.h>
 #include <WiFi.h>
 #include <WebServer.h>
-#endif
 
 #include <functional>
 #include <list>
@@ -183,7 +179,7 @@ public:
         // {
         //     cb(name);
         // }
-        json->getOrAddMember(name).set((const char *)ptr);
+        json->getOrAddMember("name").set((const char *)ptr);
     }
 
     /**
@@ -194,18 +190,18 @@ public:
     void toJsonSchema(JsonObject *json)
     {
         // json->set("name", name);
-        json->getOrAddMember('name').set(name);
-        json->getOrAddMember('type').set(GetTypeName<T>());
+        json->getOrAddMember("name").set(name);
+        json->getOrAddMember("type").set(GetTypeName<T>());
         // json->set("type", GetTypeName<T>());
         if (metadata != NULL)
         {
             // json->set("label", metadata->label());
-            json->getOrAddMember('label').set((const char *)this->metadata->label());
+            json->getOrAddMember("label").set(this->metadata->label());
 
             if (metadata->description() != NULL)
             {
                 // json->set("description", metadata->description());
-                json->getOrAddMember('description').set((const char *)this->metadata->description());
+                json->getOrAddMember("description").set(this->metadata->description());
             }
         }
     }
@@ -285,7 +281,7 @@ public:
     void toJson(JsonObject *json)
     {
         // json->set(name, ptr);
-        json->getOrAddMember(name).set((const char *)ptr);
+        json->getOrAddMember("name").set((const char *)ptr);
     }
 
     /**
@@ -296,19 +292,19 @@ public:
     void toJsonSchema(JsonObject *json)
     {
         // json->set("name", name);
-        json->getOrAddMember(name).set((const char *) name);
+        json->getOrAddMember("name").set((const char *) name);
         // json->set("type", "string");
-        json->getOrAddMember('type').set("string");
+        json->getOrAddMember("type").set((const char *) "string");
 
         if (metadata != NULL)
         {
             // json->set("label", metadata->label());
-            json->getOrAddMember('label').set((const char *)metadata->label());
+            json->getOrAddMember("label").set(metadata->label());
 
             if (metadata->description() != NULL)
             {
                 // json->set("description", metadata->description());
-                json->getOrAddMember('description').set(metadata->description());
+                json->getOrAddMember("description").set(metadata->description());
             }
         }
     }
