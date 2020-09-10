@@ -1,16 +1,20 @@
 {
   "name": "WiFiConfig",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "keywords": "wifi, wi-fi, config, rest, vuejs",
   "description": "WiFi connection and configuration manager for ESP8266 and ESP32",
   "repository": {
     "type": "git",
-    "url": "https://github.com/leegang/WifiConfig.git"
+    "url": "https://github.com/snakeye/WifiConfig.git"
   },
-  "authors": {
+  "authors": [{
+    "name": "Andrey Ovcharov",
+    "email": "andrew.ovcharov@gmail.com"
+  },
+  {
     "name": "leegang",
     "email": "bestmrlee@gmail.com"
-  },
+  }],
   "frameworks": "arduino",
   "platforms": [
     "espressif8266",
